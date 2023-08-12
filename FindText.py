@@ -1,14 +1,56 @@
+import os
+import re
+
 import wx
 import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
 
 
+def ReadFile(path):
+    try:
+        with open(path) as f:
+            return f.read()
+    except UnicodeDecodeError:
+        try:
+            with open(path, encoding='u8') as f:
+                return f.read()
+        except UnicodeDecodeError:
+            return ''
+
+
+def GetPattern(pattern, is_case, is_word, is_re):
+    if not is_re:
+        pattern = re.escape(pattern)
+    if is_word:
+        pattern = r'\b%s\b' % pattern
+    return re.compile(pattern, flags=0 if is_case else re.IGNORECASE)
+
+
+def GetFiles(path):
+    files = []
+    exts = {'.*'}
+    for root, _, files2 in os.walk(path):
+        for file in files2:
+            files.append(os.path.join(root, file))
+            exts.add(os.path.splitext(file)[1].lower())
+    return files, ['*' + ext for ext in exts]
+
+
+def GetMatches(files, pattern):
+    for file in files:
+        text = ReadFile(file)
+        for ln, line in enumerate(text.split('\n')):
+            match = pattern.search(line)
+            if match:
+                yield file, ln, line, match.span()
+
+
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, style=wx.LC_REPORT)
+        wx.ListCtrl.__init__(self, parent, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
         self.InsertColumn(0, 'Text', width=900)
-        self.InsertColumn(1, 'File', width=200)
+        self.InsertColumn(1, 'File', width=200, format=wx.LIST_FORMAT_RIGHT)
         self.InsertColumn(2, 'Ln')
 
 
@@ -28,11 +70,14 @@ class MyTextCtrl(stc.StyledTextCtrl):
 
 
 class MyPanel(wx.Panel):
-    def __init__(self, parent):
+    def __init__(self, parent, root):
         wx.Panel.__init__(self, parent)
 
+        self.root = root
+        self.matches = []
+
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
-        self.filter = wx.ComboBox(self, size=(60, -1))
+        self.filter = wx.Choice(self, size=(60, -1))
         self.btn1 = wx.ToggleButton(self, size=(30, -1), label='Cc')
         self.btn2 = wx.ToggleButton(self, size=(30, -1), label='W')
         self.btn3 = wx.ToggleButton(self, size=(30, -1), label='.*')
@@ -45,6 +90,18 @@ class MyPanel(wx.Panel):
         self.text = MyTextCtrl(self)
 
         self.SetLayout()
+
+        self.input.Bind(wx.EVT_TEXT, self.OnFind)
+        self.btn1.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
+        self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
+        self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
+
+        self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
+        self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
+
+        self.files, self.exts = GetFiles(root)
+
+        self.filter.SetItems(self.exts)
 
     def SetLayout(self):
         border = 5
@@ -69,11 +126,32 @@ class MyPanel(wx.Panel):
 
         self.SetSizer(box)
 
+    def OnFind(self, evt):
+        pattern = GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
+        self.matches = list(GetMatches(self.files, pattern))
+        self.results.DeleteAllItems()
+        for file, ln, line, span in self.matches:
+            self.results.Append([line.strip(), os.path.basename(file), ln + 1])
+
+    def OnOpenPath(self, evt):
+        idx = self.results.GetFirstSelected()
+        path = self.root if idx == -1 else self.matches[idx][0]
+        os.popen('explorer /select, "%s"' % os.path.abspath(path))
+
+    def OnSelect(self, evt):
+        idx = evt.GetIndex()
+        file, ln, line, span = self.matches[idx]
+        self.path.SetLabel(file)
+        self.text.LoadFile(file)
+        self.text.ScrollToLine(ln)
+        pos = self.text.PositionFromLine(ln)
+        self.text.SetSelection(pos + span[0], pos + span[1])
+
 
 class MyFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title='Find in Files', size=(1200, 800))
-        self.panel = MyPanel(self)
+        self.panel = MyPanel(self, '.')
         self.Centre()
         self.Show()
 
