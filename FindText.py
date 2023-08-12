@@ -19,11 +19,16 @@ def ReadFile(path):
 
 
 def GetPattern(pattern, is_case, is_word, is_re):
+    if not pattern:
+        return
     if not is_re:
         pattern = re.escape(pattern)
     if is_word:
         pattern = r'\b%s\b' % pattern
-    return re.compile(pattern, flags=0 if is_case else re.IGNORECASE)
+    try:
+        return re.compile(pattern, flags=0 if is_case else re.IGNORECASE)
+    except re.error:
+        return
 
 
 def GetFiles(path):
@@ -141,11 +146,14 @@ class MyPanel(wx.Panel):
         self.SetSizer(box)
 
     def OnFind(self, evt):
-        pattern = GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
-        self.matches = list(GetMatches(self.files, pattern))
         self.results.DeleteAllItems()
-        for file, ln, line, span in self.matches:
-            self.results.Append([line.strip(), os.path.basename(file), ln + 1])
+        self.text.ClearAll()
+        pattern = GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
+        if pattern:
+            self.matches = list(GetMatches(self.files, pattern))
+            for file, ln, line, span in self.matches:
+                self.results.Append([line.strip(), os.path.basename(file), ln + 1])
+            self.results.Select(0)
 
     def OnOpenPath(self, evt):
         idx = self.results.GetFirstSelected()
