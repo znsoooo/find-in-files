@@ -51,7 +51,19 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         listmix.ListCtrlAutoWidthMixin.__init__(self)
         self.InsertColumn(0, 'Text', width=900)
         self.InsertColumn(1, 'File', width=200, format=wx.LIST_FORMAT_RIGHT)
-        self.InsertColumn(2, 'Ln')
+        self.InsertColumn(2, 'Ln',   width=50)
+        self.Bind(wx.EVT_CHAR, self.OnChar)
+
+    def OnChar(self, evt):
+        code = evt.GetKeyCode()
+        if code not in [wx.WXK_UP, wx.WXK_DOWN]:
+            evt.Skip()
+        else:
+            cnt = self.GetItemCount()
+            idx = self.GetFirstSelected()
+            idx = (idx + 1 if code == wx.WXK_DOWN else -1 if idx == -1 else idx - 1) % cnt
+            self.Select(idx)
+            self.EnsureVisible(idx)
 
 
 class MyTextCtrl(stc.StyledTextCtrl):
@@ -77,10 +89,10 @@ class MyPanel(wx.Panel):
         self.matches = []
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
-        self.filter = wx.Choice(self, size=(60, -1))
         self.btn1 = wx.ToggleButton(self, size=(30, -1), label='Cc')
         self.btn2 = wx.ToggleButton(self, size=(30, -1), label='W')
         self.btn3 = wx.ToggleButton(self, size=(30, -1), label='.*')
+        self.filter = wx.Choice(self, size=(60, -1))
 
         self.results = MyListCtrl(self)
 
@@ -96,6 +108,8 @@ class MyPanel(wx.Panel):
         self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
 
+        self.input.Bind(wx.EVT_CHAR, self.results.OnChar)
+
         self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
         self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
 
@@ -109,10 +123,10 @@ class MyPanel(wx.Panel):
         box1 = wx.BoxSizer(wx.HORIZONTAL)
         flags = wx.TOP | wx.BOTTOM | wx.RIGHT
         box1.Add(self.input,  1, wx.ALL | wx.EXPAND, border)
-        box1.Add(self.filter, 0, flags, border)
         box1.Add(self.btn1,   0, flags, border)
         box1.Add(self.btn2,   0, flags, border)
         box1.Add(self.btn3,   0, flags, border)
+        box1.Add(self.filter, 0, flags, border)
 
         box3 = wx.BoxSizer(wx.HORIZONTAL)
         box3.Add(self.path, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, border)
@@ -154,6 +168,13 @@ class MyFrame(wx.Frame):
         self.panel = MyPanel(self, '.')
         self.Centre()
         self.Show()
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
+
+    def OnChar(self, evt):
+        if wx.WXK_ESCAPE == evt.GetKeyCode():
+            self.Close()
+        else:
+            evt.Skip()
 
 
 if __name__ == '__main__':
