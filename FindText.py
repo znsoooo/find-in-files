@@ -92,10 +92,12 @@ class MyTextCtrl(stc.StyledTextCtrl):
         stc.StyledTextCtrl.__init__(self, parent, size=(20, 20))
 
         self.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'face:Courier New,size:11')
+        self.StyleSetSpec(1, 'back:#00FFFF')
+
         self.SetAdditionalSelectionTyping(True)
         self.SetEOLMode(stc.STC_EOL_LF)  # fix save file '\r\n' translate to '\r\r\n'
         self.SetMarginType(1, stc.STC_MARGIN_NUMBER)
-        self.SetMarginWidth(1, 30)
+        self.SetMarginWidth(1, 50)
         self.SetMargins(5, -5)
         self.SetMultipleSelection(True)
         self.SetTabWidth(4)
@@ -161,10 +163,13 @@ class MyPanel(wx.Panel):
 
         self.SetSizer(box)
 
+    def GetPattern(self):
+        return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
+
     def OnFind(self, evt):
         self.results.DeleteAllItems()
         self.text.ClearAll()
-        pattern = GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
+        pattern = self.GetPattern()
         if pattern:
             self.matches = list(GetMatches(self.files, pattern))
             for file, ln, line, spans in self.matches:
@@ -181,10 +186,17 @@ class MyPanel(wx.Panel):
         file, ln, line, spans = self.matches[idx]
         self.path.SetLabel(file)
         self.text.LoadFile(file)
-        self.text.ScrollToLine(ln)
-        pos = self.text.PositionFromLine(ln)
-        for span in spans:
-            self.text.AddSelection(pos + span[0], pos + span[1])
+        self.text.ScrollToLine(ln - 12)
+        self.text.MarkerDefine(1, stc.STC_MARK_SHORTARROW)
+        self.text.MarkerAdd(ln, 1)
+
+        text = self.text.GetValue()
+        pattern = self.GetPattern()
+        self.text.SetStyling(len(text.encode()), 0)
+        for match in pattern.finditer(text):
+            p1, p2 = match.span()
+            self.text.StartStyling(p1)
+            self.text.SetStyling(p2 - p1, 1)
 
 
 class MyFrame(wx.Frame):
