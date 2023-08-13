@@ -52,7 +52,7 @@ def GetMatches(files, pattern):
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        wx.ListCtrl.__init__(self, parent, size=(20, 20), style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
         self.InsertColumn(0, 'Text', width=900)
         self.InsertColumn(1, 'File', width=200, format=wx.LIST_FORMAT_RIGHT)
@@ -73,7 +73,7 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
 
 class MyTextCtrl(stc.StyledTextCtrl):
     def __init__(self, parent):
-        stc.StyledTextCtrl.__init__(self, parent)
+        stc.StyledTextCtrl.__init__(self, parent, size=(20, 20))
 
         self.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'face:Courier New,size:11')
         self.SetAdditionalSelectionTyping(True)
