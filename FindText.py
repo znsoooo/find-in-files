@@ -8,11 +8,11 @@ import wx.lib.mixins.listctrl as listmix
 
 def ReadFile(path):
     try:
-        with open(path) as f:
+        with open(path, encoding='u8') as f:
             return f.read()
     except UnicodeDecodeError:
         try:
-            with open(path, encoding='u8') as f:
+            with open(path) as f:
                 return f.read()
         except UnicodeDecodeError:
             return ''
