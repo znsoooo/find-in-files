@@ -1,9 +1,26 @@
 import os
 import re
+import sys
+import winreg
 
 import wx
 import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
+
+
+def AddEntry():
+    key1 = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Directory\Background\shell', 0, winreg.KEY_WRITE)
+
+    key2 = winreg.CreateKey(key1, 'FindText')
+    winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, 'Find in Here')
+    winreg.SetValueEx(key2, 'Icon', 0, winreg.REG_SZ, 'SearchIndexer.exe')
+
+    key3 = winreg.CreateKey(key2, 'command')
+    winreg.SetValueEx(key3, '', 0, winreg.REG_SZ, f'"{sys.executable}" "{__file__}"')
+
+    winreg.CloseKey(key1)
+    winreg.CloseKey(key2)
+    winreg.CloseKey(key3)
 
 
 def ReadFile(path):
@@ -186,6 +203,7 @@ class MyFrame(wx.Frame):
 
 
 if __name__ == '__main__':
+    AddEntry()
     app = wx.App()
     frame = MyFrame()
     app.MainLoop()
