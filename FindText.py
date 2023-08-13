@@ -45,9 +45,8 @@ def GetMatches(files, pattern):
     for file in files:
         text = ReadFile(file)
         for ln, line in enumerate(text.split('\n')):
-            match = pattern.search(line)
-            if match:
-                yield file, ln, line, match.span()
+            if pattern.search(line):
+                yield file, ln, line, [m.span() for m in pattern.finditer(line)]
 
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
@@ -151,7 +150,7 @@ class MyPanel(wx.Panel):
         pattern = GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
         if pattern:
             self.matches = list(GetMatches(self.files, pattern))
-            for file, ln, line, span in self.matches:
+            for file, ln, line, spans in self.matches:
                 self.results.Append([line.strip(), os.path.basename(file), ln + 1])
             self.results.Select(0)
 
@@ -162,12 +161,13 @@ class MyPanel(wx.Panel):
 
     def OnSelect(self, evt):
         idx = evt.GetIndex()
-        file, ln, line, span = self.matches[idx]
+        file, ln, line, spans = self.matches[idx]
         self.path.SetLabel(file)
         self.text.LoadFile(file)
         self.text.ScrollToLine(ln)
         pos = self.text.PositionFromLine(ln)
-        self.text.SetSelection(pos + span[0], pos + span[1])
+        for span in spans:
+            self.text.AddSelection(pos + span[0], pos + span[1])
 
 
 class MyFrame(wx.Frame):
