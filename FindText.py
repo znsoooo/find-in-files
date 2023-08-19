@@ -103,6 +103,31 @@ class MyTextCtrl(stc.StyledTextCtrl):
         self.SetTabWidth(4)
         self.SetViewWhiteSpace(True)
 
+    def SetUnicodeHighlights(self, spans):
+        text = self.GetValue()
+        self.StartStyling(0)
+        self.SetStyling(len(text.encode()), 0)
+        if spans and len(spans) < 10000:
+            idxs = [0]
+            for c in text:
+                idxs.append(idxs[-1] + len(c.encode()))  # unicode index -> bytes index
+            for i, (p1, p2) in enumerate(spans):
+                p1, p2 = idxs[p1], idxs[p2]
+                self.StartStyling(p1)
+                self.SetStyling(p2 - p1, 1)
+
+    def SetUnicodeSelection(self, p1, p2):
+        text = self.GetValue()
+        p1, p2 = (len(text[:p].encode()) for p in (p1, p2))  # unicode index -> bytes index
+        self.ShowPosition(p1)
+        self.SetSelection(p1, p2)
+
+    def StartStyling(self, start):
+        try:
+            super().StartStyling(start)
+        except TypeError:  # compatible for old version of wxPython
+            super().StartStyling(start, 0xFFFF)
+
 
 class MyPanel(wx.Panel):
     def __init__(self, parent, root):
@@ -192,11 +217,8 @@ class MyPanel(wx.Panel):
 
         text = self.text.GetValue()
         pattern = self.GetPattern()
-        self.text.SetStyling(len(text.encode()), 0)
-        for match in pattern.finditer(text):
-            p1, p2 = match.span()
-            self.text.StartStyling(p1)
-            self.text.SetStyling(p2 - p1, 1)
+        spans = [m.span() for m in pattern.finditer(text)]
+        self.text.SetUnicodeHighlights(spans)
 
 
 class MyFrame(wx.Frame):
