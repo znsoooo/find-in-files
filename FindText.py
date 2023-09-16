@@ -128,6 +128,7 @@ class MyPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
 
         self.root = root
+        self.serial = 0
         self.matches = []
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
@@ -180,6 +181,7 @@ class MyPanel(wx.Panel):
         return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
 
     def OnFind(self, evt):
+        serial = self.serial = self.serial + 1
         self.matches.clear()
         self.results.DeleteAllItems()
         self.text.ClearAll()
@@ -189,7 +191,11 @@ class MyPanel(wx.Panel):
                 file, ln, line, spans = item
                 self.matches.append(item)
                 self.results.Append([line.strip(), os.path.basename(file), ln + 1])
-            self.results.Select(0)
+                if self.results.GetItemCount() == 1:
+                    self.results.Select(0)
+                wx.Yield()
+                if serial != self.serial:
+                    break
 
     def OnOpenPath(self, evt):
         idx = self.results.GetFirstSelected()
