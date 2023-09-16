@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import winreg
+import traceback
 
 import wx
 import wx.stc as stc
@@ -237,7 +238,11 @@ class MyFrame(wx.Frame):
 
 
 if __name__ == '__main__':
-    AddEntry()
+    try:
+        AddEntry()
+    except PermissionError as e:
+        traceback.print_exc()
+
     app = wx.App()
     frame = MyFrame()
     app.MainLoop()
