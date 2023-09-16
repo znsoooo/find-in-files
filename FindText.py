@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import winreg
+import pathlib
 import traceback
 
 import wx
@@ -49,22 +50,14 @@ def GetPattern(pattern, is_case, is_word, is_re):
         return
 
 
-def GetFiles(path):
-    files = []
-    exts = {'.*'}
-    for root, _, files2 in os.walk(path):
-        for file in files2:
-            files.append(os.path.join(root, file))
-            exts.add(os.path.splitext(file)[1].lower())
-    return files, ['*' + ext for ext in exts]
-
-
-def GetMatches(files, pattern):
-    for file in files:
-        text = ReadFile(file)
-        for ln, line in enumerate(text.split('\n')):
-            if pattern.search(line):
-                yield file, ln, line, [m.span() for m in pattern.finditer(line)]
+def GetMatches(path, pattern):
+    p = pathlib.Path()
+    for file in p.rglob(path):
+        if file.is_file():
+            text = ReadFile(file)
+            for ln, line in enumerate(text.split('\n')):
+                if pattern.search(line):
+                    yield str(file), ln, line, [m.span() for m in pattern.finditer(line)]
 
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
@@ -141,7 +134,6 @@ class MyPanel(wx.Panel):
         self.btn1 = wx.ToggleButton(self, size=(30, -1), label='Cc')
         self.btn2 = wx.ToggleButton(self, size=(30, -1), label='W')
         self.btn3 = wx.ToggleButton(self, size=(30, -1), label='.*')
-        self.filter = wx.Choice(self, size=(60, -1))
 
         self.results = MyListCtrl(self)
 
@@ -162,10 +154,6 @@ class MyPanel(wx.Panel):
         self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
         self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
 
-        self.files, self.exts = GetFiles(root)
-
-        self.filter.SetItems(self.exts)
-
     def SetLayout(self):
         border = 5
 
@@ -175,7 +163,6 @@ class MyPanel(wx.Panel):
         box1.Add(self.btn1,   0, flags, border)
         box1.Add(self.btn2,   0, flags, border)
         box1.Add(self.btn3,   0, flags, border)
-        box1.Add(self.filter, 0, flags, border)
 
         box3 = wx.BoxSizer(wx.HORIZONTAL)
         box3.Add(self.path, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, border)
@@ -193,12 +180,14 @@ class MyPanel(wx.Panel):
         return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
 
     def OnFind(self, evt):
+        self.matches.clear()
         self.results.DeleteAllItems()
         self.text.ClearAll()
         pattern = self.GetPattern()
         if pattern:
-            self.matches = list(GetMatches(self.files, pattern))
-            for file, ln, line, spans in self.matches:
+            for item in GetMatches(r'*', pattern):
+                file, ln, line, spans = item
+                self.matches.append(item)
                 self.results.Append([line.strip(), os.path.basename(file), ln + 1])
             self.results.Select(0)
 
