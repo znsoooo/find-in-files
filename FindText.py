@@ -144,16 +144,7 @@ class MyPanel(wx.Panel):
         self.text = MyTextCtrl(self)
 
         self.SetLayout()
-
-        self.input.Bind(wx.EVT_TEXT, self.OnFind)
-        self.btn1.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
-        self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
-        self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
-
-        self.input.Bind(wx.EVT_CHAR, self.results.OnChar)
-
-        self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
-        self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
+        self.SetBinding()
 
     def SetLayout(self):
         border = 5
@@ -176,6 +167,17 @@ class MyPanel(wx.Panel):
         box.Add(self.text,    2, wx.EXPAND)
 
         self.SetSizer(box)
+
+    def SetBinding(self):
+        self.input.Bind(wx.EVT_TEXT, self.OnFind)
+        self.btn1.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
+        self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
+        self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
+
+        self.input.Bind(wx.EVT_CHAR, self.results.OnChar)
+
+        self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
+        self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
 
     def GetPattern(self):
         return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
