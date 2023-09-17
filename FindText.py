@@ -142,6 +142,7 @@ class MyPanel(wx.Panel):
 
         self.SetLayout()
         self.SetBinding()
+        self.OnFind(-1)
 
     def SetLayout(self):
         border = 5
@@ -176,6 +177,7 @@ class MyPanel(wx.Panel):
         self.input.Bind(wx.EVT_CHAR, self.results.OnChar)
 
         self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
+        self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda e: self.path.SetLabel(os.getcwd() + os.sep))
         self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
 
     def GetPattern(self):
@@ -186,6 +188,7 @@ class MyPanel(wx.Panel):
         self.matches.clear()
         self.results.DeleteAllItems()
         self.text.ClearAll()
+        self.path.SetLabel(os.getcwd() + os.sep)
         pattern = self.GetPattern()
         if pattern:
             filter = self.filter.GetValue()
@@ -201,8 +204,10 @@ class MyPanel(wx.Panel):
 
     def OnOpenPath(self, evt):
         idx = self.results.GetFirstSelected()
-        path = self.root if idx == -1 else self.matches[idx][0]
-        os.popen('explorer /select, "%s"' % os.path.abspath(path))
+        if idx == -1:
+            os.popen('explorer "%s"' % os.getcwd())
+        else:
+            os.popen('explorer /select, "%s"' % os.path.abspath(self.matches[idx][0]))
 
     def OnSelect(self, evt):
         idx = evt.GetIndex()
