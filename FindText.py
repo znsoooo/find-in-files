@@ -47,9 +47,9 @@ def GetPattern(pattern, is_case, is_word, is_re):
         return
 
 
-def GetMatches(path, pattern):
+def GetMatches(filter, pattern):
     p = pathlib.Path()
-    for file in p.rglob(path):
+    for file in p.rglob(filter):
         if file.is_file():
             text = ReadFile(file)
             for ln, line in enumerate(text.split('\n')):
@@ -121,14 +121,14 @@ class MyTextCtrl(stc.StyledTextCtrl):
 
 
 class MyPanel(wx.Panel):
-    def __init__(self, parent, root):
+    def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
-        self.root = root
         self.serial = 0
         self.matches = []
 
-        self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
+        self.input = wx.TextCtrl(self)
+        self.filter = wx.TextCtrl(self, -1, '*.*')
         self.btn1 = wx.ToggleButton(self, size=(30, -1), label='Cc')
         self.btn2 = wx.ToggleButton(self, size=(30, -1), label='W')
         self.btn3 = wx.ToggleButton(self, size=(30, -1), label='.*')
@@ -149,6 +149,7 @@ class MyPanel(wx.Panel):
         box1 = wx.BoxSizer(wx.HORIZONTAL)
         flags = wx.TOP | wx.BOTTOM | wx.RIGHT
         box1.Add(self.input,  1, wx.ALL | wx.EXPAND, border)
+        box1.Add(self.filter, 0, flags, border)
         box1.Add(self.btn1,   0, flags, border)
         box1.Add(self.btn2,   0, flags, border)
         box1.Add(self.btn3,   0, flags, border)
@@ -167,6 +168,7 @@ class MyPanel(wx.Panel):
 
     def SetBinding(self):
         self.input.Bind(wx.EVT_TEXT, self.OnFind)
+        self.filter.Bind(wx.EVT_TEXT, self.OnFind)
         self.btn1.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
@@ -186,7 +188,8 @@ class MyPanel(wx.Panel):
         self.text.ClearAll()
         pattern = self.GetPattern()
         if pattern:
-            for item in GetMatches(r'*', pattern):
+            filter = self.filter.GetValue()
+            for item in GetMatches(filter, pattern):
                 file, ln, line, spans = item
                 self.matches.append(item)
                 self.results.Append([line.strip(), os.path.basename(file), ln + 1])
@@ -219,7 +222,7 @@ class MyPanel(wx.Panel):
 class MyFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title='Find in Files', size=(1200, 800))
-        self.panel = MyPanel(self, '.')
+        self.panel = MyPanel(self)
         self.Centre()
         self.Show()
         self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
