@@ -11,18 +11,15 @@ import wx.lib.mixins.listctrl as listmix
 
 
 def AddEntry():
-    key1 = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Directory\Background\shell', 0, winreg.KEY_WRITE)
+    key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Directory\Background\shell\FindText')
+    winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Here')
+    winreg.SetValueEx(key1, 'Icon', 0, winreg.REG_SZ, 'Magnify.exe')
 
-    key2 = winreg.CreateKey(key1, 'FindText')
-    winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, 'Find in Here')
-    winreg.SetValueEx(key2, 'Icon', 0, winreg.REG_SZ, 'SearchIndexer.exe')
-
-    key3 = winreg.CreateKey(key2, 'command')
-    winreg.SetValueEx(key3, '', 0, winreg.REG_SZ, f'"{sys.executable}" "{__file__}"')
+    key2 = winreg.CreateKey(key1, 'command')
+    winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, f'"{sys.executable}" "{__file__}"')
 
     winreg.CloseKey(key1)
     winreg.CloseKey(key2)
-    winreg.CloseKey(key3)
 
 
 def ReadFile(path):
@@ -237,7 +234,7 @@ class MyFrame(wx.Frame):
 if __name__ == '__main__':
     try:
         AddEntry()
-    except PermissionError as e:
+    except Exception as e:
         traceback.print_exc()
 
     app = wx.App()
