@@ -94,6 +94,13 @@ class MyTextCtrl(stc.StyledTextCtrl):
         self.SetTabWidth(4)
         self.SetViewWhiteSpace(True)
 
+        self.Bind(stc.EVT_STC_CHANGE, self.OnText)
+
+    def OnText(self, evt):
+        lines = self.GetLineCount()
+        width = len(str(lines)) * 9 + 24
+        self.SetMarginWidth(1, width)
+
     def SetUnicodeHighlights(self, spans):
         text = self.GetValue()
         self.StartStyling(0)
