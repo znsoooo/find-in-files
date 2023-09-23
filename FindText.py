@@ -47,14 +47,18 @@ def GetPattern(pattern, is_case, is_word, is_re):
         return
 
 
-def GetMatches(filter, pattern):
+def GetFiles(filter):
     p = pathlib.Path()
     for file in p.rglob(filter):
         if file.is_file():
-            text = ReadFile(file)
-            for ln, line in enumerate(text.split('\n')):
-                if pattern.search(line):
-                    yield str(file), ln, line, [m.span() for m in pattern.finditer(line)]
+            yield file
+
+
+def GetMatches(file, pattern):
+    text = ReadFile(file)
+    for ln, line in enumerate(text.split('\n')):
+        if pattern.search(line):
+            yield str(file), ln, line, [m.span() for m in pattern.finditer(line)]
 
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
@@ -190,24 +194,33 @@ class MyPanel(wx.Panel):
     def GetPattern(self):
         return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
 
+    def UpdateUI(self, serial):
+        wx.Yield()
+        return serial != self.serial
+
     def OnFind(self, evt):
         serial = self.serial = self.serial + 1
         self.matches.clear()
         self.results.DeleteAllItems()
         self.text.ClearAll()
         self.path.SetLabel(os.getcwd() + os.sep)
+
+        filter = self.filter.GetValue()
         pattern = self.GetPattern()
-        if pattern:
-            filter = self.filter.GetValue()
-            for item in GetMatches(filter, pattern):
+        if not pattern:
+            return
+
+        for file in GetFiles(filter):
+            if self.UpdateUI(serial):
+                return
+            for item in GetMatches(file, pattern):
+                if self.UpdateUI(serial):
+                    return
                 file, ln, line, spans = item
                 self.matches.append(item)
                 self.results.Append([line.strip(), os.path.basename(file), ln + 1])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
-                wx.Yield()
-                if serial != self.serial:
-                    break
 
     def OnOpenPath(self, evt):
         idx = self.results.GetFirstSelected()
