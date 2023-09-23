@@ -213,7 +213,7 @@ class MyPanel(wx.Panel):
         idx = evt.GetIndex()
         file, ln, line, spans = self.matches[idx]
         self.path.SetLabel(file)
-        self.text.LoadFile(file)
+        self.text.SetValue(ReadFile(file))
         self.text.ScrollToLine(ln - 12)
         self.text.MarkerDefine(1, stc.STC_MARK_SHORTARROW)
         self.text.MarkerAdd(ln, 1)
