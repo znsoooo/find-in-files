@@ -250,6 +250,7 @@ class MyFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title='Find in Files - ' + __ver__, size=(1200, 800))
         self.panel = MyPanel(self)
+        self.Layout()
         self.Centre()
         self.Show()
         self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
