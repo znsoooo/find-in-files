@@ -9,6 +9,8 @@ import wx
 import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
 
+__ver__ = 'v1.0.0'
+
 
 def AddEntry():
     key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Directory\Background\shell\FindText')
@@ -246,7 +248,7 @@ class MyPanel(wx.Panel):
 
 class MyFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, title='Find in Files', size=(1200, 800))
+        wx.Frame.__init__(self, None, title='Find in Files - ' + __ver__, size=(1200, 800))
         self.panel = MyPanel(self)
         self.Centre()
         self.Show()
