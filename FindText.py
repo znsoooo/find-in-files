@@ -50,17 +50,19 @@ def GetPattern(pattern, is_case, is_word, is_re):
 
 
 def GetFiles(filter):
-    p = pathlib.Path()
-    for file in p.rglob(filter):
+    root = pathlib.Path()
+    for file in root.rglob(filter):
         if file.is_file():
-            yield file
+            yield str(file)
 
 
 def GetMatches(file, pattern):
+    if pattern.search(file):
+        yield file, -1, file, [m.span() for m in pattern.finditer(file)]
     text = ReadFile(file)
     for ln, line in enumerate(text.split('\n')):
         if pattern.search(line):
-            yield str(file), ln, line, [m.span() for m in pattern.finditer(line)]
+            yield file, ln, line, [m.span() for m in pattern.finditer(line)]
 
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
@@ -220,7 +222,8 @@ class MyPanel(wx.Panel):
                     return
                 file, ln, line, spans = item
                 self.matches.append(item)
-                self.results.Append([line.strip(), os.path.basename(file), ln + 1])
+                ln = '-' if ln < 0 else str(ln + 1)  # ln is -1 while match on path name
+                self.results.Append([line.strip(), os.path.basename(file), ln])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
 
