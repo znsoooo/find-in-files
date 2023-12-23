@@ -249,17 +249,37 @@ class MyPanel(wx.Panel):
 class MyFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title='Find in Files - ' + __ver__, size=(1200, 800))
+
         self.panel = MyPanel(self)
+        self.log = os.path.join(os.path.dirname(__file__), 'history.txt')
+
         self.Layout()
         self.Centre()
         self.Show()
+
         self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+
+        wx.CallAfter(self.OnOpen)
 
     def OnChar(self, evt):
         if wx.WXK_ESCAPE == evt.GetKeyCode():
             self.Close()
         else:
             evt.Skip()
+
+    def OnOpen(self):
+        if os.path.isfile(self.log):
+            with open(self.log, encoding='u8') as f:
+                self.panel.input.SetValue(f.read())
+                self.panel.input.SetInsertionPointEnd()
+
+    def OnClose(self, evt):
+        patt = self.panel.input.GetValue()
+        if patt:
+            with open('history.txt', 'w', encoding='u8') as f:
+                f.write(patt)
+        evt.Skip()
 
 
 if __name__ == '__main__':
