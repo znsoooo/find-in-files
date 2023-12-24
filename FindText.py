@@ -45,7 +45,7 @@ def GetPattern(pattern, is_case, is_word, is_re):
     if is_word:
         pattern = r'\b%s\b' % pattern
     try:
-        return re.compile(pattern, flags=0 if is_case else re.IGNORECASE)
+        return re.compile(pattern, flags=re.M if is_case else re.M | re.I)
     except re.error:
         return
 
