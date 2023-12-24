@@ -10,6 +10,7 @@ import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
 
 __ver__ = 'v1.0.0'
+__title__ = 'Find in Files - ' + __ver__
 
 
 def AddEntry():
@@ -139,6 +140,8 @@ class MyPanel(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
+        self.parent = parent
+
         self.serial = 0
         self.matches = []
 
@@ -212,12 +215,16 @@ class MyPanel(wx.Panel):
         filter = self.filter.GetValue()
         pattern = self.GetPattern()
         if not pattern:
+            self.parent.status.SetStatusText('')
             return
 
+        cnt1 = cnt2 = 0
         for file in GetFiles(filter):
+            cnt1 += 1
             if self.UpdateUI(serial):
                 return
             for item in GetMatches(file, pattern):
+                cnt2 += 1
                 if self.UpdateUI(serial):
                     return
                 file, ln, line, spans = item
@@ -226,6 +233,8 @@ class MyPanel(wx.Panel):
                 self.results.Append([line.strip(), os.path.basename(file), ln])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
+                self.parent.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
+            self.parent.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
 
     def OnOpenPath(self, evt):
         idx = self.results.GetFirstSelected()
@@ -251,10 +260,12 @@ class MyPanel(wx.Panel):
 
 class MyFrame(wx.Frame):
     def __init__(self):
-        wx.Frame.__init__(self, None, title='Find in Files - ' + __ver__, size=(1200, 800))
+        wx.Frame.__init__(self, None, title=__title__, size=(1200, 800))
 
-        self.panel = MyPanel(self)
         self.log = os.path.join(os.path.dirname(__file__), 'history.txt')
+
+        self.status = self.CreateStatusBar()
+        self.panel = MyPanel(self)
 
         self.Layout()
         self.Centre()
