@@ -147,9 +147,9 @@ class MyPanel(wx.Panel):
 
         self.input = wx.TextCtrl(self)
         self.filter = wx.TextCtrl(self, -1, '*.*')
-        self.btn1 = wx.ToggleButton(self, size=(30, -1), label='Cc')
-        self.btn2 = wx.ToggleButton(self, size=(30, -1), label='W')
-        self.btn3 = wx.ToggleButton(self, size=(30, -1), label='.*')
+        self.btn1 = wx.ToggleButton(self, size=(30, 10), label='Cc')
+        self.btn2 = wx.ToggleButton(self, size=(30, 10), label='W')
+        self.btn3 = wx.ToggleButton(self, size=(30, 10), label='.*')
 
         self.results = MyListCtrl(self)
 
@@ -163,15 +163,15 @@ class MyPanel(wx.Panel):
         self.OnFind(-1)
 
     def SetLayout(self):
-        border = 5
+        border = 4
 
         box1 = wx.BoxSizer(wx.HORIZONTAL)
         flags = wx.TOP | wx.BOTTOM | wx.RIGHT
-        box1.Add(self.input,  1, wx.ALL | wx.EXPAND, border)
+        box1.Add(self.input,  1, wx.ALL, border)
         box1.Add(self.filter, 0, flags, border)
-        box1.Add(self.btn1,   0, flags, border)
-        box1.Add(self.btn2,   0, flags, border)
-        box1.Add(self.btn3,   0, flags, border)
+        box1.Add(self.btn1,   0, flags | wx.EXPAND, border)
+        box1.Add(self.btn2,   0, flags | wx.EXPAND, border)
+        box1.Add(self.btn3,   0, flags | wx.EXPAND, border)
 
         box3 = wx.BoxSizer(wx.HORIZONTAL)
         box3.Add(self.path, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, border)
