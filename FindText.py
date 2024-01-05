@@ -160,7 +160,6 @@ class MyPanel(wx.Panel):
 
         self.SetLayout()
         self.SetBinding()
-        self.OnFind(-1)
 
     def SetLayout(self):
         border = 4
@@ -262,8 +261,7 @@ class MyFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title=__title__, size=(1200, 800))
 
-        self.log = os.path.join(os.path.dirname(__file__), 'history.txt')
-
+        self.history = os.path.join(os.path.dirname(__file__), 'history.txt')
         self.status = self.CreateStatusBar()
         self.panel = MyPanel(self)
 
@@ -283,16 +281,26 @@ class MyFrame(wx.Frame):
             evt.Skip()
 
     def OnOpen(self):
-        if os.path.isfile(self.log):
-            with open(self.log, encoding='u8') as f:
-                self.panel.input.SetValue(f.read())
-                self.panel.input.SetInsertionPointEnd()
+        if not os.path.isfile(self.history):
+            return
+        try:
+            input, filter, mask = ReadFile(self.history).splitlines()
+            self.panel.input.SetValue(input)
+            self.panel.filter.SetValue(filter)
+            self.panel.btn1.SetValue(int(mask[0]))
+            self.panel.btn2.SetValue(int(mask[1]))
+            self.panel.btn3.SetValue(int(mask[2]))
+            self.panel.input.SetInsertionPointEnd()
+        except Exception:
+            traceback.print_exc()
 
     def OnClose(self, evt):
-        patt = self.panel.input.GetValue()
-        if patt:
-            with open('history.txt', 'w', encoding='u8') as f:
-                f.write(patt)
+        input = self.panel.input.GetValue()
+        filter = self.panel.filter.GetValue()
+        mask = '%d%d%d' % (self.panel.btn1.GetValue(), self.panel.btn2.GetValue(), self.panel.btn3.GetValue())
+        if input:
+            with open(self.history, 'w', encoding='u8') as f:
+                f.write('\n'.join([input, filter, mask]))
         evt.Skip()
 
 
