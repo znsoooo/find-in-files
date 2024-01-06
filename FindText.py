@@ -9,8 +9,8 @@ import wx
 import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
 
-__ver__ = 'v1.0.0'
-__title__ = 'Find in Files - ' + __ver__
+__ver__ = 'v1.1.0'
+__title__ = 'Find in Files ' + __ver__
 
 
 def AddEntry():
@@ -222,13 +222,19 @@ class MyPanel(wx.Panel):
         self.text.EmptyUndoBuffer()
         self.path.SetLabel(os.getcwd() + os.sep)
 
-        filter = self.filter.GetValue()
+        input = self.input.GetValue()
+        if not input:
+            self.parent.SetTitle(__title__)
+        else:
+            self.parent.SetTitle(f'{input.strip()} - {__title__}')
+
         pattern = self.GetPattern()
         if not pattern:
             self.status.SetStatusText('')
             return
 
         cnt1 = cnt2 = 0
+        filter = self.filter.GetValue()
         for file in GetFiles(filter):
             cnt1 += 1
             if self.UpdateUI(serial):
