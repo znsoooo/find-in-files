@@ -219,6 +219,7 @@ class MyPanel(wx.Panel):
         self.matches.clear()
         self.results.DeleteAllItems()
         self.text.ClearAll()
+        self.text.EmptyUndoBuffer()
         self.path.SetLabel(os.getcwd() + os.sep)
 
         filter = self.filter.GetValue()
@@ -257,6 +258,7 @@ class MyPanel(wx.Panel):
         file, ln, line, spans = self.matches[idx]
         self.path.SetLabel(file)
         self.text.SetValue(ReadFile(file))
+        self.text.EmptyUndoBuffer()
         self.text.ScrollToLine(ln - 12)
         self.text.MarkerDefine(1, stc.STC_MARK_SHORTARROW)
         self.text.MarkerAdd(ln, 1)
