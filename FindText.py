@@ -161,9 +161,10 @@ class MyPanel(wx.Panel):
         self.text = MyTextCtrl(self)
 
         self.SetLayout()
-        self.SetBinding()
 
-        wx.CallAfter(self.OnOpen)
+        self.OnOpen()  # load history text before binding `wx.EVT_TEXT`
+        self.SetBinding()
+        wx.CallAfter(self.OnFind, -1)
 
     def SetLayout(self):
         border = 4
