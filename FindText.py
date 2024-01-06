@@ -141,9 +141,11 @@ class MyPanel(wx.Panel):
         wx.Panel.__init__(self, parent)
 
         self.parent = parent
+        self.status = parent.status
 
         self.serial = 0
         self.matches = []
+        self.history = os.path.join(os.path.dirname(__file__), 'history.txt')
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.filter = wx.TextCtrl(self, -1, '*.*', style=wx.TE_PROCESS_ENTER)
@@ -160,6 +162,8 @@ class MyPanel(wx.Panel):
 
         self.SetLayout()
         self.SetBinding()
+
+        wx.CallAfter(self.OnOpen)
 
     def SetLayout(self):
         border = 4
@@ -199,6 +203,9 @@ class MyPanel(wx.Panel):
         self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda e: self.path.SetLabel(os.getcwd() + os.sep))
         self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
 
+        self.parent.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
+        self.parent.Bind(wx.EVT_CLOSE, self.OnClose)
+
     def GetPattern(self):
         return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
 
@@ -216,7 +223,7 @@ class MyPanel(wx.Panel):
         filter = self.filter.GetValue()
         pattern = self.GetPattern()
         if not pattern:
-            self.parent.status.SetStatusText('')
+            self.status.SetStatusText('')
             return
 
         cnt1 = cnt2 = 0
@@ -234,8 +241,8 @@ class MyPanel(wx.Panel):
                 self.results.Append([line.strip(), os.path.basename(file), ln])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
-                self.parent.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
-            self.parent.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
+                self.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
+            self.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
 
     def OnOpenPath(self, evt):
         idx = self.results.GetFirstSelected()
@@ -258,27 +265,9 @@ class MyPanel(wx.Panel):
         spans = [m.span() for m in pattern.finditer(text)]
         self.text.SetUnicodeHighlights(spans)
 
-
-class MyFrame(wx.Frame):
-    def __init__(self):
-        wx.Frame.__init__(self, None, title=__title__, size=(1200, 800))
-
-        self.history = os.path.join(os.path.dirname(__file__), 'history.txt')
-        self.status = self.CreateStatusBar()
-        self.panel = MyPanel(self)
-
-        self.Layout()
-        self.Centre()
-        self.Show()
-
-        self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
-
-        wx.CallAfter(self.OnOpen)
-
     def OnChar(self, evt):
         if wx.WXK_ESCAPE == evt.GetKeyCode():
-            self.Close()
+            self.parent.Close()
         else:
             evt.Skip()
 
@@ -287,23 +276,33 @@ class MyFrame(wx.Frame):
             return
         try:
             input, filter, mask = ReadFile(self.history).splitlines()
-            self.panel.input.SetValue(input)
-            self.panel.filter.SetValue(filter)
-            self.panel.btn1.SetValue(int(mask[0]))
-            self.panel.btn2.SetValue(int(mask[1]))
-            self.panel.btn3.SetValue(int(mask[2]))
-            self.panel.input.SetInsertionPointEnd()
+            self.input.SetValue(input)
+            self.filter.SetValue(filter)
+            self.btn1.SetValue(int(mask[0]))
+            self.btn2.SetValue(int(mask[1]))
+            self.btn3.SetValue(int(mask[2]))
+            self.input.SetInsertionPointEnd()
         except Exception:
             traceback.print_exc()
 
     def OnClose(self, evt):
-        input = self.panel.input.GetValue()
-        filter = self.panel.filter.GetValue()
-        mask = '%d%d%d' % (self.panel.btn1.GetValue(), self.panel.btn2.GetValue(), self.panel.btn3.GetValue())
+        input = self.input.GetValue()
+        filter = self.filter.GetValue()
+        mask = '%d%d%d' % (self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
         if input:
             with open(self.history, 'w', encoding='u8') as f:
                 f.write('\n'.join([input, filter, mask]))
         evt.Skip()
+
+
+class MyFrame(wx.Frame):
+    def __init__(self):
+        wx.Frame.__init__(self, None, title=__title__, size=(1200, 800))
+        self.status = self.CreateStatusBar()  # must be initialized here
+        self.panel = MyPanel(self)
+        self.Layout()
+        self.Centre()
+        self.Show()
 
 
 if __name__ == '__main__':
