@@ -145,8 +145,8 @@ class MyPanel(wx.Panel):
         self.serial = 0
         self.matches = []
 
-        self.input = wx.TextCtrl(self)
-        self.filter = wx.TextCtrl(self, -1, '*.*')
+        self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
+        self.filter = wx.TextCtrl(self, -1, '*.*', style=wx.TE_PROCESS_ENTER)
         self.btn1 = wx.ToggleButton(self, size=(30, 10), label='Cc')
         self.btn2 = wx.ToggleButton(self, size=(30, 10), label='W')
         self.btn3 = wx.ToggleButton(self, size=(30, 10), label='.*')
@@ -186,7 +186,9 @@ class MyPanel(wx.Panel):
 
     def SetBinding(self):
         self.input.Bind(wx.EVT_TEXT, self.OnFind)
+        self.input.Bind(wx.EVT_TEXT_ENTER, self.OnFind)
         self.filter.Bind(wx.EVT_TEXT, self.OnFind)
+        self.filter.Bind(wx.EVT_TEXT_ENTER, self.OnFind)
         self.btn1.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
