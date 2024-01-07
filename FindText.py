@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-import winreg
 import pathlib
 import traceback
 
@@ -14,15 +13,21 @@ __title__ = 'Find in Files ' + __ver__
 
 
 def AddEntry():
-    key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Directory\Background\shell\FindText')
-    winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Here')
-    winreg.SetValueEx(key1, 'Icon', 0, winreg.REG_SZ, 'Magnify.exe')
+    try:
+        import winreg
 
-    key2 = winreg.CreateKey(key1, 'command')
-    winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, f'"{sys.executable}" "{__file__}"')
+        key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Directory\Background\shell\FindText')
+        winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Here')
+        winreg.SetValueEx(key1, 'Icon', 0, winreg.REG_SZ, 'Magnify.exe')
 
-    winreg.CloseKey(key1)
-    winreg.CloseKey(key2)
+        key2 = winreg.CreateKey(key1, 'command')
+        winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, f'"{sys.executable}" "{__file__}"')
+
+        winreg.CloseKey(key1)
+        winreg.CloseKey(key2)
+
+    except Exception as e:
+        traceback.print_exc()
 
 
 def ReadFile(path):
@@ -313,11 +318,7 @@ class MyFrame(wx.Frame):
 
 
 if __name__ == '__main__':
-    try:
-        AddEntry()
-    except Exception as e:
-        traceback.print_exc()
-
+    AddEntry()
     app = wx.App()
     frame = MyFrame()
     app.MainLoop()
