@@ -26,15 +26,13 @@ def AddEntry():
 
 
 def ReadFile(path):
-    try:
-        with open(path, encoding='u8') as f:
-            return f.read()
-    except UnicodeDecodeError:
+    for encoding in ['u8', 'u16', None]:
         try:
-            with open(path) as f:
-                return f.read()
-        except UnicodeDecodeError:
-            return ''
+            with open(path, encoding=encoding) as f:
+                return f.read(1000) + f.read()  # raise an error in first 1000 chars while file is very big
+        except UnicodeError:
+            pass
+    return ''
 
 
 def GetPattern(pattern, is_case, is_word, is_re):
