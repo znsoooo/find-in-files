@@ -17,7 +17,7 @@ def AddEntry():
         import winreg
 
         key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Directory\Background\shell\FindText')
-        winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Here')
+        winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Files')
         winreg.SetValueEx(key1, 'Icon', 0, winreg.REG_SZ, 'Magnify.exe')
 
         key2 = winreg.CreateKey(key1, 'command')

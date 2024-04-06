@@ -1,6 +1,6 @@
 @echo off
 
-set name=FindText
+set name=FindInFiles
 set root=dist\%name%
 set libs=%root%\wx
 
