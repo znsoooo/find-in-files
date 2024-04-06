@@ -1,0 +1,6 @@
+*.pyc
+/*.spec
+/build/*
+/dist/*
+
+/test*
