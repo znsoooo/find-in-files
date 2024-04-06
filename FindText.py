@@ -8,7 +8,7 @@ import wx
 import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
 
-__ver__ = 'v1.1.0'
+__ver__ = 'v1.1.1'
 __title__ = 'Find in Files ' + __ver__
 
 
