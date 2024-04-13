@@ -54,10 +54,13 @@ def GetPattern(pattern, is_case, is_word, is_re):
 
 
 def GetFiles(filter):
-    root = pathlib.Path()
-    for file in root.rglob(filter):
-        if file.is_file():
-            yield str(file)
+    paths = sys.argv[1:] or [os.getcwd()]  # use cwd if args not exist
+    for path in paths:
+        root = pathlib.Path(path)
+        files = root.rglob(filter) if root.is_dir() else [root] if root.match(filter) else []
+        for file in files:
+            if file.is_file():
+                yield str(file)
 
 
 def GetMatches(file, pattern):
