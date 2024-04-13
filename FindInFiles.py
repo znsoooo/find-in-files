@@ -16,17 +16,29 @@ def AddEntry():
     try:
         import winreg
 
-        key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r'SOFTWARE\Classes\Directory\Background\shell\FindText')
-        winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Files')
-        winreg.SetValueEx(key1, 'Icon', 0, winreg.REG_SZ, 'Magnify.exe')
+        paths = [
+            r'SOFTWARE\Classes\*\shell\FindInFiles',
+            r'SOFTWARE\Classes\Directory\shell\FindInFiles',
+            r'SOFTWARE\Classes\Directory\Background\shell\FindInFiles',
+        ]
 
-        key2 = winreg.CreateKey(key1, 'command')
-        winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, f'"{sys.executable}" "{__file__}"')
+        for i, path in enumerate(paths):
+            key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, path)
+            winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Files')
+            winreg.SetValueEx(key1, 'Icon', 0, winreg.REG_SZ, 'Magnify.exe')
 
-        winreg.CloseKey(key1)
-        winreg.CloseKey(key2)
+            key2 = winreg.CreateKey(key1, 'command')
+            value2 = f'"{sys.executable}" "{__file__}"'
+            if hasattr(sys, '_MEIPASS'):  # if build by pyinstaller
+                value2 = f'"{sys.executable}"'
+            if i < 2:  # if find in one file or folder
+                value2 += ' "%1"'
+            winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, value2)
 
-    except Exception as e:
+            winreg.CloseKey(key1)
+            winreg.CloseKey(key2)
+
+    except Exception:
         traceback.print_exc()
 
 
