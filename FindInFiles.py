@@ -148,7 +148,7 @@ class MyPanel(wx.Panel):
 
         self.serial = 0
         self.matches = []
-        self.history = os.path.join(os.path.dirname(__file__), 'history.txt')
+        self.history = sys.argv[0] + '/../history.txt'
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.filter = wx.TextCtrl(self, -1, '*.*', style=wx.TE_PROCESS_ENTER)
