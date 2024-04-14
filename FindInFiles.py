@@ -12,34 +12,56 @@ __ver__ = 'v1.1.1'
 __title__ = 'Find in Files ' + __ver__
 
 
-def AddEntry():
+def SetupOnWindows():
+    prefix = f'"{sys.executable}" "{__file__}"'
+    if hasattr(sys, '_MEIPASS'):  # if build by pyinstaller
+        prefix = f'"{sys.executable}"'
     try:
-        import winreg
-
-        paths = [
-            r'SOFTWARE\Classes\*\shell\FindInFiles',
-            r'SOFTWARE\Classes\Directory\shell\FindInFiles',
-            r'SOFTWARE\Classes\Directory\Background\shell\FindInFiles',
-        ]
-
-        for i, path in enumerate(paths):
-            key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, path)
-            winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Files')
-            winreg.SetValueEx(key1, 'Icon', 0, winreg.REG_SZ, 'Magnify.exe')
-
-            key2 = winreg.CreateKey(key1, 'command')
-            value2 = f'"{sys.executable}" "{__file__}"'
-            if hasattr(sys, '_MEIPASS'):  # if build by pyinstaller
-                value2 = f'"{sys.executable}"'
-            if i < 2:  # if find in one file or folder
-                value2 += ' "%1"'
-            winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, value2)
-
-            winreg.CloseKey(key1)
-            winreg.CloseKey(key2)
-
+        SetContextMenu(prefix)
+        SetSendTo(prefix)
     except Exception:
         traceback.print_exc()
+
+
+def SetContextMenu(prefix):
+    import winreg
+
+    paths = [
+        r'SOFTWARE\Classes\*\shell\FindInFiles',
+        r'SOFTWARE\Classes\Directory\shell\FindInFiles',
+        r'SOFTWARE\Classes\Directory\Background\shell\FindInFiles',
+    ]
+
+    for i, path in enumerate(paths):
+        key1 = winreg.CreateKey(winreg.HKEY_CURRENT_USER, path)
+        winreg.SetValueEx(key1, '', 0, winreg.REG_SZ, 'Find in Files')
+        winreg.SetValueEx(key1, 'Icon', 0, winreg.REG_SZ, 'Magnify.exe')
+
+        key2 = winreg.CreateKey(key1, 'command')
+        value2 = prefix + ' "%1"' if i < 2 else prefix  # open with one args or not
+        winreg.SetValueEx(key2, '', 0, winreg.REG_SZ, value2)
+
+        winreg.CloseKey(key1)
+        winreg.CloseKey(key2)
+
+
+def SetSendTo(prefix):
+    import winreg
+
+    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders')
+    path = os.path.expandvars(winreg.QueryValueEx(key, 'SendTo')[0])
+    winreg.CloseKey(key)
+
+    text = (
+        'args = "%s"\n'
+        'For i = 0 To WScript.Arguments.Count - 1\n'
+        '    args = args & " """ & WScript.Arguments(i) & """"\n'
+        'Next\n'
+        'WScript.CreateObject("WScript.Shell").Run args\n'
+    ) % prefix.replace('"', '""')
+
+    with open(f'{path}/Find in Files.vbs', 'w') as f:
+        f.write(text)
 
 
 def ReadFile(path):
@@ -340,7 +362,7 @@ class MyFrame(wx.Frame):
 
 
 if __name__ == '__main__':
-    AddEntry()
+    SetupOnWindows()
     app = wx.App()
     frame = MyFrame()
     app.MainLoop()
