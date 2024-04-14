@@ -43,7 +43,7 @@ def AddEntry():
 
 
 def ReadFile(path):
-    for encoding in ['u8', 'u16', None]:
+    for encoding in ['u8', 'u16', 'gbk', None]:
         try:
             with open(path, encoding=encoding) as f:
                 return f.read(1000) + f.read()  # raise an error in first 1000 chars while file is very big
