@@ -93,16 +93,21 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         self.InsertColumn(2, 'Ln',   width=50)
         self.Bind(wx.EVT_CHAR, self.OnChar)
 
+    def OnView(self, direction):
+        cnt = self.GetItemCount()
+        idx = self.GetFirstSelected()
+        idx = (idx if idx == -1 and direction < 0 else idx + direction) % cnt
+        self.Select(idx)
+        self.EnsureVisible(idx)
+
     def OnChar(self, evt):
         code = evt.GetKeyCode()
-        if code not in [wx.WXK_UP, wx.WXK_DOWN]:
-            evt.Skip()
+        if code == wx.WXK_UP:
+            self.OnView(-1)
+        elif code == wx.WXK_DOWN:
+            self.OnView(1)
         else:
-            cnt = self.GetItemCount()
-            idx = self.GetFirstSelected()
-            idx = (idx + 1 if code == wx.WXK_DOWN else -1 if idx == -1 else idx - 1) % cnt
-            self.Select(idx)
-            self.EnsureVisible(idx)
+            evt.Skip()
 
 
 class MyTextCtrl(stc.StyledTextCtrl):
@@ -217,6 +222,8 @@ class MyPanel(wx.Panel):
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
 
         self.input.Bind(wx.EVT_CHAR, self.results.OnChar)
+        self.input.Bind(wx.EVT_MOUSEWHEEL, lambda e: self.results.OnView(1 if e.GetWheelRotation() < 0 else -1))
+        self.input.Bind(wx.EVT_MOUSEWHEEL, lambda e: self.results.OnView(1 if e.GetWheelRotation() < 0 else -1))
 
         self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
         self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda e: self.path.SetLabel(os.getcwd() + os.sep))
