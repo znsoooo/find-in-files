@@ -1,19 +1,20 @@
 @echo off
 
 set name=FindInFiles
-set root=dist\%name%
-set libs=%root%\wx
+set build=py -m PyInstaller -yws --noupx
+set quiet=1^>nul 2^>nul
 
-pyinstaller -ywsF --noupx %name%.py
+%build% %name%.py
 echo.
 
-pyinstaller -yws --noupx %name%.py
+echo Remove unused files...
+del dist\%name%\*.manifest %quiet%
+del dist\%name%\*.pyd %quiet%
+del dist\%name%\api*.dll %quiet%
+del dist\%name%\_internal\*.pyd %quiet%
+del dist\%name%\_internal\api*.dll %quiet%
+move dist\%name%\wx*.dll dist\%name%\wx %quiet%
 echo.
 
-move %root%\*.pyd %libs%
-move %root%\*.dll %libs%
-move %libs%\python*.dll %root%
-echo.
-
-%root%\%name%.exe
+dist\%name%\%name%.exe
 pause
