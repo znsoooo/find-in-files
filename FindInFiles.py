@@ -8,8 +8,8 @@ import wx
 import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
 
-__ver__ = 'v1.1.1'
-__title__ = 'Find in Files ' + __ver__
+__version__ = 'v1.2.0'
+__title__ = 'Find in Files ' + __version__
 
 
 def SetupOnWindows():
