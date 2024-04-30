@@ -136,6 +136,8 @@ class MyTextCtrl(stc.StyledTextCtrl):
     def __init__(self, parent):
         stc.StyledTextCtrl.__init__(self, parent, size=(20, 20))
 
+        self.text = None
+
         self.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'face:Courier New,size:11')
         self.StyleSetSpec(1, 'back:#00FFFF')
 
@@ -148,31 +150,36 @@ class MyTextCtrl(stc.StyledTextCtrl):
         self.SetTabWidth(4)
         self.SetViewWhiteSpace(True)
 
-        self.Bind(stc.EVT_STC_CHANGE, self.OnText)
+        self.Bind(stc.EVT_STC_CHANGE, self.SetMargin)
 
-    def OnText(self, evt):
+    def SetMargin(self, evt):
         lines = self.GetLineCount()
         width = len(str(lines)) * 9 + 24
         self.SetMarginWidth(1, width)
 
-    def SetUnicodeHighlights(self, spans):
-        text = self.GetValue()
-        self.StartStyling(0)
-        self.SetStyling(len(text.encode()), 0)
-        if spans and len(spans) < 10000:
-            idxs = [0]
-            for c in text:
-                idxs.append(idxs[-1] + len(c.encode()))  # unicode index -> bytes index
-            for i, (p1, p2) in enumerate(spans):
-                p1, p2 = idxs[p1], idxs[p2]
-                self.StartStyling(p1)
-                self.SetStyling(p2 - p1, 1)
+    def ResetText(self, text):
+        if text == self.text:
+            return
 
-    def SetUnicodeSelection(self, p1, p2):
-        text = self.GetValue()
-        p1, p2 = (len(text[:p].encode()) for p in (p1, p2))  # unicode index -> bytes index
-        self.ShowPosition(p1)
-        self.SetSelection(p1, p2)
+        self.text = text
+        self.SetEditable(True)
+        self.SetValue(text)
+        self.EmptyUndoBuffer()
+        self.SetEditable(False)
+
+        # convert unicode index to bytes index
+        self.idxs = [0]
+        for c in self.text:
+            self.idxs.append(self.idxs[-1] + len(c.encode()))
+
+    def SetHighlightPattern(self, pattern):
+        self.StartStyling(0)
+        self.SetStyling(self.idxs[-1], 0)
+        for i, m in enumerate(pattern.finditer(self.text)):
+            p1 = self.idxs[m.start()]
+            p2 = self.idxs[m.end()]
+            self.StartStyling(p1)
+            self.SetStyling(p2 - p1, 1)
 
     def StartStyling(self, start):
         try:
@@ -265,9 +272,8 @@ class MyPanel(wx.Panel):
         serial = self.serial = self.serial + 1
         self.matches.clear()
         self.results.DeleteAllItems()
-        self.text.ClearAll()
-        self.text.EmptyUndoBuffer()
         self.path.SetLabel(os.getcwd() + os.sep)
+        self.text.ResetText('')
 
         input = self.input.GetValue()
         if not input:
@@ -309,17 +315,16 @@ class MyPanel(wx.Panel):
     def OnSelect(self, evt):
         idx = evt.GetIndex()
         file, ln, line, spans = self.matches[idx]
+
         self.path.SetLabel(file)
-        self.text.SetValue(ReadFile(file))
-        self.text.EmptyUndoBuffer()
+        self.text.ResetText(ReadFile(file))
+
         self.text.ScrollToLine(ln - 12)
         self.text.MarkerDefine(1, stc.STC_MARK_SHORTARROW)
         self.text.MarkerAdd(ln, 1)
 
-        text = self.text.GetValue()
         pattern = self.GetPattern()
-        spans = [m.span() for m in pattern.finditer(text)]
-        self.text.SetUnicodeHighlights(spans)
+        self.text.SetHighlightPattern(pattern)
 
     def OnChar(self, evt):
         if wx.WXK_ESCAPE == evt.GetKeyCode():
