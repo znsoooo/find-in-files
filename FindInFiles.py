@@ -117,7 +117,7 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         self.Bind(wx.EVT_CHAR, self.OnChar)
 
     def OnView(self, direction):
-        cnt = self.GetItemCount()
+        cnt = self.GetItemCount() or 1
         idx = self.GetFirstSelected()
         idx = (idx if idx == -1 and direction < 0 else idx + direction) % cnt
         self.Select(idx)
