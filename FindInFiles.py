@@ -141,6 +141,7 @@ class MyTextCtrl(stc.StyledTextCtrl):
 
         self.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'face:Courier New,size:11')
         self.StyleSetSpec(1, 'back:#00FFFF')
+        self.MarkerDefine(1, stc.STC_MARK_SHORTARROW)
 
         self.SetAdditionalSelectionTyping(True)
         self.SetEOLMode(stc.STC_EOL_LF)  # fix save file '\r\n' translate to '\r\r\n'
@@ -172,6 +173,11 @@ class MyTextCtrl(stc.StyledTextCtrl):
         self.idxs = [0]
         for c in self.text:
             self.idxs.append(self.idxs[-1] + len(c.encode()))
+
+    def SetHighlightLine(self, line):
+        self.ScrollToLine(line - 12)
+        self.MarkerDeleteAll(1)
+        self.MarkerAdd(line, 1)
 
     def SetHighlightPattern(self, pattern):
         self.StartStyling(0)
@@ -316,15 +322,11 @@ class MyPanel(wx.Panel):
     def OnSelect(self, evt):
         idx = evt.GetIndex()
         file, ln, line, spans = self.matches[idx]
+        pattern = self.GetPattern()
 
         self.path.SetLabel(file)
         self.text.ResetText(ReadFile(file))
-
-        self.text.ScrollToLine(ln - 12)
-        self.text.MarkerDefine(1, stc.STC_MARK_SHORTARROW)
-        self.text.MarkerAdd(ln, 1)
-
-        pattern = self.GetPattern()
+        self.text.SetHighlightLine(ln)
         self.text.SetHighlightPattern(pattern)
 
     def OnChar(self, evt):
