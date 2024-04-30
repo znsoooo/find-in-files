@@ -1,4 +1,5 @@
 import os
+import os.path as op
 import re
 import sys
 import pathlib
@@ -49,7 +50,7 @@ def SetSendTo(prefix):
     import winreg
 
     key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders')
-    path = os.path.expandvars(winreg.QueryValueEx(key, 'SendTo')[0])
+    path = op.expandvars(winreg.QueryValueEx(key, 'SendTo')[0])
     winreg.CloseKey(key)
 
     text = (
@@ -299,7 +300,7 @@ class MyPanel(wx.Panel):
                 file, ln, line, spans = item
                 self.matches.append(item)
                 ln = '-' if ln < 0 else str(ln + 1)  # ln is -1 while match on path name
-                self.results.Append([line.strip(), os.path.basename(file), ln])
+                self.results.Append([line.strip(), op.basename(file), ln])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
                 self.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
@@ -310,7 +311,7 @@ class MyPanel(wx.Panel):
         if idx == -1:
             os.popen('explorer "%s"' % os.getcwd())
         else:
-            os.popen('explorer /select, "%s"' % os.path.abspath(self.matches[idx][0]))
+            os.popen('explorer /select, "%s"' % op.abspath(self.matches[idx][0]))
 
     def OnSelect(self, evt):
         idx = evt.GetIndex()
@@ -333,7 +334,7 @@ class MyPanel(wx.Panel):
             evt.Skip()
 
     def OnOpen(self):
-        if not os.path.isfile(self.history):
+        if not op.isfile(self.history):
             return
         try:
             input, filter, mask = ReadFile(self.history).splitlines()
