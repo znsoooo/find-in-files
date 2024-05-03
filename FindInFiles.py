@@ -102,9 +102,13 @@ def GetMatches(file, pattern):
     if pattern.search(file):
         yield file, -1, file, [m.span() for m in pattern.finditer(file)]
     text = ReadFile(file)
-    for ln, line in enumerate(text.split('\n')):
-        if pattern.search(line):
-            yield file, ln, line, [m.span() for m in pattern.finditer(line)]
+    lines = text.split('\n')
+    last_ln = -1
+    for m in pattern.finditer(text):
+        ln = text.count('\n', 0, m.start())
+        if last_ln != ln:
+            last_ln = ln
+            yield file, ln, lines[ln], [m.span() for m in pattern.finditer(lines[ln])]
 
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
