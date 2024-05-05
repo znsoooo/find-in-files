@@ -206,7 +206,7 @@ class MyPanel(wx.Panel):
         self.parent = parent
         self.status = parent.status
 
-        self.serial = 0
+        self.pid = 0
         self.matches = []
         self.history = sys.argv[0] + '/../history.txt'
 
@@ -275,12 +275,12 @@ class MyPanel(wx.Panel):
     def GetPattern(self):
         return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
 
-    def UpdateUI(self, serial):
+    def UpdateUI(self, pid):
         wx.Yield()
-        return serial != self.serial
+        return pid != self.pid
 
     def OnFind(self, evt):
-        serial = self.serial = self.serial + 1
+        pid = self.pid = self.pid + 1
         self.matches.clear()
         self.results.DeleteAllItems()
         self.path.SetLabel(os.getcwd() + os.sep)
@@ -301,11 +301,11 @@ class MyPanel(wx.Panel):
         filter = self.filter.GetValue()
         for file in GetFiles(filter):
             cnt1 += 1
-            if self.UpdateUI(serial):
+            if self.UpdateUI(pid):
                 return
             for item in GetMatches(file, pattern):
                 cnt2 += 1
-                if self.UpdateUI(serial):
+                if self.UpdateUI(pid):
                     return
                 file, ln, line, spans = item
                 self.matches.append(item)
@@ -335,6 +335,7 @@ class MyPanel(wx.Panel):
 
     def OnChar(self, evt):
         if wx.WXK_ESCAPE == evt.GetKeyCode():
+            self.pid += 1  # refresh pid to quit from finding loop
             self.parent.Close()
         else:
             evt.Skip()
