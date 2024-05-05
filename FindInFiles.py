@@ -254,17 +254,15 @@ class MyPanel(wx.Panel):
         self.SetSizer(box)
 
     def SetBinding(self):
-        self.input.Bind(wx.EVT_TEXT, self.OnFind)
-        self.input.Bind(wx.EVT_TEXT_ENTER, self.OnFind)
-        self.filter.Bind(wx.EVT_TEXT, self.OnFind)
-        self.filter.Bind(wx.EVT_TEXT_ENTER, self.OnFind)
+        for widget in [self.input, self.filter]:
+            widget.Bind(wx.EVT_TEXT, self.OnFind)
+            widget.Bind(wx.EVT_TEXT_ENTER, self.OnFind)
+            widget.Bind(wx.EVT_CHAR, self.results.OnChar)
+            widget.Bind(wx.EVT_MOUSEWHEEL, lambda e: self.results.OnView(1 if e.GetWheelRotation() < 0 else -1))
+
         self.btn1.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
-
-        self.input.Bind(wx.EVT_CHAR, self.results.OnChar)
-        self.input.Bind(wx.EVT_MOUSEWHEEL, lambda e: self.results.OnView(1 if e.GetWheelRotation() < 0 else -1))
-        self.input.Bind(wx.EVT_MOUSEWHEEL, lambda e: self.results.OnView(1 if e.GetWheelRotation() < 0 else -1))
 
         self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
         self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda e: self.path.SetLabel(os.getcwd() + os.sep))
