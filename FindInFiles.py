@@ -182,6 +182,7 @@ class MyTextCtrl(stc.StyledTextCtrl):
         self.ScrollToLine(line - 12)
         self.MarkerDeleteAll(1)
         self.MarkerAdd(line, 1)
+        self.ScrollToColumn(0)
 
     def SetHighlightPattern(self, pattern):
         self.StartStyling(0)
