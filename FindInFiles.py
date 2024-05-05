@@ -274,7 +274,10 @@ class MyPanel(wx.Panel):
     def GetPattern(self):
         return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
 
-    def UpdateUI(self, pid):
+    def UpdateUI(self, pid, cnt1=0, cnt2=0):
+        self.cnt1 += cnt1
+        self.cnt2 += cnt2
+        self.status.SetStatusText(f' Found {self.cnt2} results in {self.cnt1} files')
         wx.Yield()
         return pid != self.pid
 
@@ -300,15 +303,13 @@ class MyPanel(wx.Panel):
         if filter != '**' and '**' in filter:
             return self.status.SetStatusText(' Bad filter')
 
-        cnt1 = cnt2 = 0
-        self.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
+        self.cnt1 = self.cnt2 = 0
+        self.UpdateUI(pid)
         for file in GetFiles(filter):
-            cnt1 += 1
-            if self.UpdateUI(pid):
+            if self.UpdateUI(pid, 1):
                 return
             for item in GetMatches(file, pattern):
-                cnt2 += 1
-                if self.UpdateUI(pid):
+                if self.UpdateUI(pid, 0, 1):
                     return
                 file, ln, line, spans = item
                 self.matches.append(item)
@@ -316,8 +317,6 @@ class MyPanel(wx.Panel):
                 self.results.Append([line.strip(), op.basename(file), ln])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
-                self.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
-            self.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
 
     def OnOpenPath(self, evt):
         idx = self.results.GetFirstSelected()
