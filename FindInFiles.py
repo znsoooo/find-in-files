@@ -288,16 +288,20 @@ class MyPanel(wx.Panel):
         input = self.input.GetValue()
         if not input:
             self.parent.SetTitle(__title__)
+            return self.status.SetStatusText(' Input pattern')
         else:
             self.parent.SetTitle(f'{input.strip()} - {__title__}')
 
         pattern = self.GetPattern()
         if not pattern:
-            self.status.SetStatusText('')
-            return
+            return self.status.SetStatusText(' Bad pattern')
+
+        filter = self.filter.GetValue()
+        if filter != '**' and '**' in filter:
+            return self.status.SetStatusText(' Bad filter')
 
         cnt1 = cnt2 = 0
-        filter = self.filter.GetValue()
+        self.status.SetStatusText(f' Found {cnt2} results in {cnt1} files')
         for file in GetFiles(filter):
             cnt1 += 1
             if self.UpdateUI(pid):
