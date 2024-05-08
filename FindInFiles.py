@@ -209,7 +209,7 @@ class MyPanel(wx.Panel):
 
         self.pid = 0
         self.matches = []
-        self.history = sys.argv[0] + '/../history.txt'
+        self.history = op.realpath(sys.argv[0] + '/../history.txt')
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.filter = wx.TextCtrl(self, -1, '*.*', style=wx.TE_PROCESS_ENTER)
