@@ -163,7 +163,7 @@ class MyTextCtrl(stc.StyledTextCtrl):
         width = len(str(lines)) * 9 + 24
         self.SetMarginWidth(1, width)
 
-    def ResetText(self, text):
+    def ResetText(self, text=''):
         if text == self.text:
             return
 
@@ -286,14 +286,14 @@ class MyPanel(wx.Panel):
         self.matches.clear()
         self.results.DeleteAllItems()
         self.path.SetLabel(os.getcwd() + os.sep)
-        self.text.ResetText('')
+        self.text.ResetText()
 
         input = self.input.GetValue()
+        title = f'{input.strip()} - {__title__}' if input else __title__
+        self.parent.SetTitle(title)
+
         if not input:
-            self.parent.SetTitle(__title__)
             return self.status.SetStatusText(' Input pattern')
-        else:
-            self.parent.SetTitle(f'{input.strip()} - {__title__}')
 
         pattern = self.GetPattern()
         if not pattern:
