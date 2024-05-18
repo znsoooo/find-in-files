@@ -13,6 +13,11 @@ __version__ = 'v1.2.0'
 __title__ = 'Find in Files ' + __version__
 
 
+ID_RUNNING = 0
+ID_STOPPED = 1
+ID_RESTART = 2
+
+
 def SetupOnWindows():
     prefix = f'"{sys.executable}" "{__file__}"'
     if hasattr(sys, '_MEIPASS'):  # if build by pyinstaller
@@ -207,7 +212,7 @@ class MyPanel(wx.Panel):
         self.parent = parent
         self.status = parent.status
 
-        self.pid = 0
+        self.flag = ID_STOPPED
         self.matches = []
         self.history = op.realpath(sys.argv[0] + '/../history.txt')
 
@@ -274,15 +279,30 @@ class MyPanel(wx.Panel):
     def GetPattern(self):
         return GetPattern(self.input.GetValue(), self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
 
-    def UpdateUI(self, pid, cnt1=0, cnt2=0):
-        self.cnt1 += cnt1
-        self.cnt2 += cnt2
-        self.status.SetStatusText(f' Found {self.cnt2} results in {self.cnt1} files')
-        wx.Yield()
-        return pid != self.pid
+    def KeepGoing(self, iter, cnt1=0, cnt2=0):
+        for item in iter:
+            wx.Yield()
+            if self.flag != ID_RUNNING:
+                return
+            self.cnt1 += cnt1
+            self.cnt2 += cnt2
+            self.status.SetStatusText(f' Found {self.cnt2} results in {self.cnt1} files')
+            yield item
 
     def OnFind(self, evt):
-        pid = self.pid = self.pid + 1
+        if self.flag == ID_STOPPED:
+            try:
+                self.FindResults()
+            except Exception:
+                traceback.print_exc()
+            finally:
+                self.flag = ID_STOPPED
+        else:
+            self.flag = ID_RESTART
+
+    def FindResults(self):
+        self.flag = ID_RUNNING
+
         self.matches.clear()
         self.results.DeleteAllItems()
         self.path.SetLabel(os.getcwd() + os.sep)
@@ -304,19 +324,19 @@ class MyPanel(wx.Panel):
             return self.status.SetStatusText(' Bad filter')
 
         self.cnt1 = self.cnt2 = 0
-        self.UpdateUI(pid)
-        for file in GetFiles(filter):
-            if self.UpdateUI(pid, 1):
-                return
-            for item in GetMatches(file, pattern):
-                if self.UpdateUI(pid, 0, 1):
-                    return
+        self.status.SetStatusText(f' Found {self.cnt2} results in {self.cnt1} files')
+
+        for file in self.KeepGoing(GetFiles(filter), 1):
+            for item in self.KeepGoing(GetMatches(file, pattern), 0, 1):
                 file, ln, line, spans = item
                 self.matches.append(item)
                 ln = '-' if ln < 0 else str(ln + 1)  # ln is -1 while match on path name
                 self.results.Append([line.strip(), op.basename(file), ln])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
+
+        if self.flag == ID_RESTART:
+            self.FindResults()
 
     def OnOpenPath(self, evt):
         idx = self.results.GetFirstSelected()
@@ -337,7 +357,7 @@ class MyPanel(wx.Panel):
 
     def OnChar(self, evt):
         if wx.WXK_ESCAPE == evt.GetKeyCode():
-            self.pid += 1  # refresh pid to quit from finding loop
+            self.flag = ID_STOPPED
             self.parent.Close()
         else:
             evt.Skip()
