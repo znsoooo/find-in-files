@@ -94,6 +94,7 @@ def GetPattern(pattern, is_case, is_word, is_re):
 
 
 def GetFiles(filter):
+    filter = re.sub(r'\*+', '*', filter.lstrip('/\\')) or '*'  # convert illegal path pattern
     paths = sys.argv[1:] or [os.getcwd()]  # use cwd if args not exist
     for path in paths:
         root = pathlib.Path(path)
@@ -319,14 +320,10 @@ class MyPanel(wx.Panel):
         if not pattern:
             return self.status.SetStatusText(' Bad pattern')
 
-        filter = self.filter.GetValue()
-        if filter != '**' and '**' in filter:
-            return self.status.SetStatusText(' Bad filter')
-
         self.cnt1 = self.cnt2 = 0
         self.status.SetStatusText(f' Found {self.cnt2} results in {self.cnt1} files')
 
-        for file in self.KeepGoing(GetFiles(filter), 1):
+        for file in self.KeepGoing(GetFiles(self.filter.GetValue()), 1):
             for item in self.KeepGoing(GetMatches(file, pattern), 0, 1):
                 file, ln, line, spans = item
                 self.matches.append(item)
