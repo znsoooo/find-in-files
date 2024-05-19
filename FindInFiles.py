@@ -8,6 +8,7 @@ Search mode supports matching-case, whole-word, and regular-expressions.
 
 Usage on cross-platform
 -----------------------
+
 Search in current working directory:
     $ cd /path/you/need
     $ python FindInFiles.py
@@ -15,20 +16,27 @@ Search in current working directory:
 Search in multiple locations:
     $ python FindInFiles.py DIR1 DIR2 .. FILE1 FILE2 ..
 
+
 Usage on Windows
 ----------------
+
 There is two way to start the program:
     1. Select ONE file or folder, or right-click in the background of explorer, and choose the "Find in Files" option.
     2. Select multiple files or folders, and choose the "Find in Files" option from the "Send to" menu.
 
+
 Licence
 -------
+
 Author:
     Shixian Li
+
 E-mail:
     lsx7@sina.com
+
 Website:
     https://github.com/znsoooo/find-in-files
+
 Licence:
     MIT License. Copyright (c) 2023-2024 Shixian Li (znsoooo).
 
@@ -53,6 +61,8 @@ __title__ = 'Find in Files ' + __version__
 ID_RUNNING = 0
 ID_STOPPED = 1
 ID_RESTART = 2
+
+IS_BARE_RUN = not sys.argv[1:] and op.realpath(os.getcwd()) == op.realpath(op.dirname(sys.argv[0]))
 
 
 def SetupOnWindows():
@@ -351,6 +361,9 @@ class MyPanel(wx.Panel):
         self.parent.SetTitle(title)
 
         if not input:
+            if IS_BARE_RUN:
+                self.text.ResetText(__doc__.lstrip())
+                return self.status.SetStatusText(' Tutorial')
             return self.status.SetStatusText(' Input pattern')
 
         pattern = self.GetPattern()
