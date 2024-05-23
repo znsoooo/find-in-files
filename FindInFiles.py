@@ -404,7 +404,6 @@ class MyPanel(wx.Panel):
 
     def OnChar(self, evt):
         if wx.WXK_ESCAPE == evt.GetKeyCode():
-            self.flag = ID_STOPPED
             self.parent.Close()
         else:
             evt.Skip()
@@ -424,6 +423,7 @@ class MyPanel(wx.Panel):
             traceback.print_exc()
 
     def OnClose(self, evt):
+        self.flag = ID_STOPPED
         input = self.input.GetValue()
         filter = self.filter.GetValue()
         mask = '%d%d%d' % (self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
