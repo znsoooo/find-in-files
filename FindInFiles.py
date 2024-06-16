@@ -195,9 +195,11 @@ class MyTextCtrl(stc.StyledTextCtrl):
         stc.StyledTextCtrl.__init__(self, parent, size=(20, 20))
 
         self.text = None
+        self.pattern = self.pattern2 = re.compile('$0')  # impossible pattern
 
         self.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'face:Courier New,size:11')
         self.StyleSetSpec(1, 'back:#00FFFF')
+        self.StyleSetSpec(2, 'back:#7FFF7F')
         self.MarkerDefine(1, stc.STC_MARK_SHORTARROW)
 
         self.SetAdditionalSelectionTyping(True)
@@ -210,6 +212,14 @@ class MyTextCtrl(stc.StyledTextCtrl):
         self.SetViewWhiteSpace(True)
 
         self.Bind(stc.EVT_STC_CHANGE, self.SetMargin)
+        self.Bind(stc.EVT_STC_UPDATEUI, lambda e: self.SetHighlightPattern())
+
+    def GetSelectedPattern(self):
+        selected = self.GetSelectedText()
+        if re.fullmatch(r'\w+', selected):
+            return GetPattern(selected, False, True, False)
+        else:
+            return re.compile('$0')
 
     def SetMargin(self, evt):
         lines = self.GetLineCount()
@@ -221,6 +231,8 @@ class MyTextCtrl(stc.StyledTextCtrl):
             return
 
         self.text = text
+        self.pattern = self.pattern2 = re.compile('$0')  # impossible pattern
+
         self.SetEditable(True)
         self.SetValue(text)
         self.EmptyUndoBuffer()
@@ -237,20 +249,28 @@ class MyTextCtrl(stc.StyledTextCtrl):
         self.MarkerAdd(line, 1)
         self.ScrollToColumn(0)
 
-    def SetHighlightPattern(self, pattern):
-        self.StartStyling(0)
-        self.SetStyling(self.idxs[-1], 0)
-        for i, m in enumerate(pattern.finditer(self.text)):
-            p1 = self.idxs[m.start()]
-            p2 = self.idxs[m.end()]
-            self.StartStyling(p1)
-            self.SetStyling(p2 - p1, 1)
+    def SetHighlightPattern(self, pattern=None):
+        pattern = pattern or self.pattern
+        pattern2 = self.GetSelectedPattern()
 
-    def StartStyling(self, start):
+        if (pattern, pattern2) == (self.pattern, self.pattern2):
+            return  # nothing changed
+
+        self.pattern = pattern
+        self.pattern2 = pattern2
+        self.SetStyleRange(0, 0, -1)
+        for style, pattern in enumerate([self.pattern, pattern2], 1):
+            for i, m in enumerate(pattern.finditer(self.text)):
+                self.SetStyleRange(style, *m.span())
+
+    def SetStyleRange(self, style, start, end):
+        start = self.idxs[start]
+        end = self.idxs[end]
         try:
-            super().StartStyling(start)
+            self.StartStyling(start)
         except TypeError:  # compatible for old version of wxPython
-            super().StartStyling(start, 0xFFFF)
+            self.StartStyling(start, 0xFFFF)
+        self.SetStyling(end - start, style)
 
 
 class MyPanel(wx.Panel):
