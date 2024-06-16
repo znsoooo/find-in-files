@@ -65,6 +65,14 @@ ID_RESTART = 2
 IS_BARE_RUN = not sys.argv[1:] and op.realpath(os.getcwd()) == op.realpath(op.dirname(sys.argv[0]))
 
 
+def help():
+    dlg = wx.TextEntryDialog(None, 'Help on module re:', 'Syntax Help', re.__doc__.strip(), style=wx.TE_MULTILINE | wx.OK)
+    dlg.SetSize(800, 600)
+    dlg.Center()
+    dlg.ShowModal()
+    dlg.Destroy()
+
+
 def SetupOnWindows():
     prefix = f'"{sys.executable}" "{__file__}"'
     if hasattr(sys, '_MEIPASS'):  # if build by pyinstaller
@@ -423,8 +431,11 @@ class MyPanel(wx.Panel):
         self.text.SetHighlightPattern(pattern)
 
     def OnChar(self, evt):
-        if wx.WXK_ESCAPE == evt.GetKeyCode():
+        key = evt.GetKeyCode()
+        if key == wx.WXK_ESCAPE:
             self.parent.Close()
+        elif key == wx.WXK_F1:
+            help()
         else:
             evt.Skip()
 
