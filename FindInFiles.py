@@ -300,8 +300,8 @@ class MyPanel(wx.Panel):
 
         self.results = MyListCtrl(self)
 
-        self.path = wx.StaticText(self, label='fullpath')
-        self.btn4 = wx.Button(self, label='Open in Explorer')
+        self.path = wx.TextCtrl(self, -1, 'fullpath', style=wx.TE_READONLY | wx.NO_BORDER)
+        self.btn4 = wx.Button(self, -1, 'Open in Explorer')
 
         self.text = MyTextCtrl(self)
 
@@ -346,7 +346,7 @@ class MyPanel(wx.Panel):
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
 
         self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
-        self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda e: self.path.SetLabel(os.getcwd() + os.sep))
+        self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda e: self.path.SetValue(os.getcwd() + os.sep))
         self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
 
         self.parent.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
@@ -381,7 +381,7 @@ class MyPanel(wx.Panel):
 
         self.matches.clear()
         self.results.DeleteAllItems()
-        self.path.SetLabel(os.getcwd() + os.sep)
+        self.path.SetValue(os.getcwd() + os.sep)
         self.text.ResetText()
 
         input = self.input.GetValue()
@@ -425,7 +425,7 @@ class MyPanel(wx.Panel):
         file, ln, line, spans = self.matches[idx]
         pattern = self.GetPattern()
 
-        self.path.SetLabel(file)
+        self.path.SetValue(file)
         self.text.ResetText(ReadFile(file))
         self.text.SetHighlightLine(ln)
         self.text.SetHighlightPattern(pattern)
