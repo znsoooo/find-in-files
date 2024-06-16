@@ -467,8 +467,14 @@ class MyPanel(wx.Panel):
 class MyFrame(wx.Frame):
     def __init__(self):
         wx.Frame.__init__(self, None, title=__title__, size=(1200, 800))
+
         self.status = self.CreateStatusBar()  # must be initialized here
         self.panel = MyPanel(self)
+
+        icon_path = os.path.realpath(__file__ + '/../icon.ico')
+        if os.path.isfile(icon_path):
+            self.SetIcons(wx.IconBundle(icon_path))
+
         self.Layout()
         self.Centre()
         self.Show()
