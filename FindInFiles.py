@@ -300,7 +300,7 @@ class MyPanel(wx.Panel):
 
         self.results = MyListCtrl(self)
 
-        self.path = wx.TextCtrl(self, -1, 'fullpath', style=wx.TE_READONLY | wx.NO_BORDER)
+        self.path = wx.TextCtrl(self, -1, 'fullpath', style=wx.TE_READONLY | wx.TE_NOHIDESEL | wx.NO_BORDER)
         self.btn4 = wx.Button(self, -1, 'Open in Explorer')
 
         self.text = MyTextCtrl(self)
@@ -414,11 +414,11 @@ class MyPanel(wx.Panel):
             self.FindResults()
 
     def OnOpenPath(self, evt):
-        idx = self.results.GetFirstSelected()
-        if idx == -1:
-            os.popen('explorer "%s"' % os.getcwd())
-        else:
-            os.popen('explorer /select, "%s"' % op.abspath(self.matches[idx][0]))
+        path = self.path.GetStringSelection()
+        if not os.path.exists(path):
+            path = self.path.GetValue()
+        path = os.path.abspath(path)
+        os.popen(f'explorer /select, "{path}"')
 
     def OnSelect(self, evt):
         idx = evt.GetIndex()
