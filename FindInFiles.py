@@ -346,7 +346,7 @@ class MyPanel(wx.Panel):
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
 
         self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
-        self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, lambda e: self.path.SetValue(os.getcwd() + os.sep))
+        self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnSelect)
         self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
 
         self.parent.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
@@ -421,14 +421,17 @@ class MyPanel(wx.Panel):
         os.popen(f'explorer /select, "{path}"')
 
     def OnSelect(self, evt):
-        idx = evt.GetIndex()
-        file, ln, line, spans = self.matches[idx]
-        pattern = self.GetPattern()
-
-        self.path.SetValue(file)
-        self.text.ResetText(ReadFile(file))
-        self.text.SetHighlightLine(ln)
-        self.text.SetHighlightPattern(pattern)
+        idx = self.results.GetFirstSelected()
+        if idx == -1:
+            self.path.SetValue(os.getcwd() + os.sep)
+            self.text.ResetText()
+        else:
+            file, ln, line, spans = self.matches[idx]
+            pattern = self.GetPattern()
+            self.path.SetValue(file)
+            self.text.ResetText(ReadFile(file))
+            self.text.SetHighlightLine(ln)
+            self.text.SetHighlightPattern(pattern)
 
     def OnChar(self, evt):
         key = evt.GetKeyCode()
