@@ -208,7 +208,7 @@ class MyTextCtrl(stc.StyledTextCtrl):
         stc.StyledTextCtrl.__init__(self, parent, size=(20, 20))
 
         self.text = None
-        self.pattern = self.pattern2 = re.compile('$0')  # impossible pattern
+        self.patt_search = self.patt_select = re.compile('$0')  # impossible pattern
 
         self.StyleSetSpec(stc.STC_STYLE_DEFAULT, 'face:Courier New,size:11')
         self.StyleSetSpec(1, 'back:#00FFFF')
@@ -244,7 +244,7 @@ class MyTextCtrl(stc.StyledTextCtrl):
             return
 
         self.text = text
-        self.pattern = self.pattern2 = re.compile('$0')  # impossible pattern
+        self.patt_search = self.patt_select = re.compile('$0')  # impossible pattern
 
         self.SetEditable(True)
         self.SetValue(text)
@@ -263,17 +263,17 @@ class MyTextCtrl(stc.StyledTextCtrl):
         self.ScrollToColumn(0)
 
     def SetHighlightPattern(self, pattern=None):
-        pattern = pattern or self.pattern
-        pattern2 = self.GetSelectedPattern()
+        patt_search = pattern or self.patt_search
+        patt_select = self.GetSelectedPattern()
 
-        if (pattern, pattern2) == (self.pattern, self.pattern2):
+        if (patt_search, patt_select) == (self.patt_search, self.patt_select):
             return  # nothing changed
 
-        self.pattern = pattern
-        self.pattern2 = pattern2
+        self.patt_search = patt_search
+        self.patt_select = patt_select
         self.SetStyleRange(0, 0, -1)
-        for style, pattern in enumerate([self.pattern, pattern2], 1):
-            for i, m in enumerate(pattern.finditer(self.text)):
+        for style, patt in enumerate([self.patt_search, self.patt_select], 1):
+            for i, m in enumerate(patt.finditer(self.text)):
                 self.SetStyleRange(style, *m.span())
 
     def SetStyleRange(self, style, start, end):
