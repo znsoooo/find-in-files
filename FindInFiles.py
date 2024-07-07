@@ -439,6 +439,8 @@ class MyPanel(wx.Panel):
     def OnSelect(self, evt):
         idx = self.results.GetFirstSelected()
         if idx == -1:
+            # changing selected item also raise DESELECTED event, cause idxs to recalculate, so skip this case
+            return
             self.path.SetValue(os.getcwd() + os.sep)
             self.text.ResetText()
         else:
