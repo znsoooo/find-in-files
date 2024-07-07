@@ -164,12 +164,17 @@ def GetMatches(file, pattern):
         yield file, -1, file, [m.span() for m in pattern.finditer(file)]
     text = ReadFile(file)
     lines = text.split('\n')
-    last_ln = -1
+    line_sts = [m.start() for m in re.finditer(r'^', text, re.M)] + [len(text) + 1]
+    line_st = line_sts.pop(0)
+    ln = -1
     for m in pattern.finditer(text):
-        ln = text.count('\n', 0, m.start())
-        if last_ln != ln:
-            last_ln = ln
-            yield file, ln, lines[ln], [m.span() for m in pattern.finditer(lines[ln])]
+        match_st = m.start()
+        if match_st < line_st:
+            continue
+        while match_st >= line_st:
+            line_st = line_sts.pop(0)
+            ln += 1
+        yield file, ln, lines[ln], [m.span() for m in pattern.finditer(lines[ln])]
 
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
