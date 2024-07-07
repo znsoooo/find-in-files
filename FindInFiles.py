@@ -379,6 +379,7 @@ class MyPanel(wx.Panel):
     def FindResults(self):
         self.flag = ID_RUNNING
 
+        self.SaveHistory()
         self.matches.clear()
         self.results.DeleteAllItems()
         self.path.SetValue(os.getcwd() + os.sep)
@@ -412,6 +413,16 @@ class MyPanel(wx.Panel):
 
         if self.flag == ID_RESTART:
             self.FindResults()
+
+    def SaveHistory(self):
+        input = self.input.GetValue()
+        filter = self.filter.GetValue()
+        mask = '%d%d%d' % (self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
+        try:
+            with open(self.history, 'w', encoding='u8') as f:
+                f.write('\n'.join([input, filter, mask]))
+        except Exception:
+            traceback.print_exc()
 
     def OnOpenPath(self, evt):
         path = self.path.GetStringSelection()
@@ -458,12 +469,7 @@ class MyPanel(wx.Panel):
 
     def OnClose(self, evt):
         self.flag = ID_STOPPED
-        input = self.input.GetValue()
-        filter = self.filter.GetValue()
-        mask = '%d%d%d' % (self.btn1.GetValue(), self.btn2.GetValue(), self.btn3.GetValue())
-        if input:
-            with open(self.history, 'w', encoding='u8') as f:
-                f.write('\n'.join([input, filter, mask]))
+        self.SaveHistory()
         evt.Skip()
 
 
