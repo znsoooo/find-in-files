@@ -25,7 +25,7 @@ There is two way to start the program:
     2. Select multiple files or folders, and choose the "Find in Files" option from the "Send to" menu.
 
 
-Licence
+License
 -------
 
 Author:
@@ -37,7 +37,7 @@ E-mail:
 Website:
     https://github.com/znsoooo/find-in-files
 
-Licence:
+License:
     MIT License. Copyright (c) 2023-2024 Shixian Li (znsoooo).
 
 """
@@ -63,14 +63,6 @@ ID_STOPPED = 1
 ID_RESTART = 2
 
 IS_BARE_RUN = not sys.argv[1:] and op.realpath(os.getcwd()) == op.realpath(op.dirname(sys.argv[0]))
-
-
-def help():
-    dlg = wx.TextEntryDialog(None, 'Help on module re:', 'Syntax Help', re.__doc__.strip(), style=wx.TE_MULTILINE | wx.OK)
-    dlg.SetSize(800, 600)
-    dlg.Center()
-    dlg.ShowModal()
-    dlg.Destroy()
 
 
 def SetupOnWindows():
@@ -175,6 +167,17 @@ def GetMatches(file, pattern):
             line_st = line_sts.pop(0)
             ln += 1
         yield file, ln, lines[ln], [m.span() for m in pattern.finditer(lines[ln])]
+
+
+class MyTextDialog(wx.TextEntryDialog):
+    def __init__(self, title, prompt, text, size):
+        wx.TextEntryDialog.__init__(self, None, prompt, title, text, style=wx.TE_MULTILINE | wx.OK)
+        font = wx.Font(10, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        self.GetChildren()[1].SetFont(font)
+        self.SetSize(size)
+        self.Center()
+        self.ShowModal()
+        self.Destroy()
 
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
@@ -456,7 +459,11 @@ class MyPanel(wx.Panel):
         if key == wx.WXK_ESCAPE:
             self.parent.Close()
         elif key == wx.WXK_F1:
-            help()
+            text = re.__doc__.strip()
+            MyTextDialog('Regex Syntax', 'Help on module re:', text, (800, 600))
+        elif key == wx.WXK_F12:
+            text = __doc__[__doc__.find('License'):].strip()
+            MyTextDialog('About Find-in-Files', 'License:', text, (600, 400))
         else:
             evt.Skip()
 
