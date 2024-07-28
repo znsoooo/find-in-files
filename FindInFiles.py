@@ -54,7 +54,7 @@ import wx
 import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
 
-__version__ = 'v1.3.0'
+__version__ = 'v1.4.0'
 __title__ = 'Find in Files ' + __version__
 
 
