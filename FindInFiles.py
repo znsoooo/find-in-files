@@ -44,7 +44,7 @@ License:
 
 
 import os
-import os.path as op
+import os.path as osp
 import re
 import sys
 import pathlib
@@ -62,7 +62,7 @@ ID_RUNNING = 0
 ID_STOPPED = 1
 ID_RESTART = 2
 
-IS_BARE_RUN = not sys.argv[1:] and op.realpath(os.getcwd()) == op.realpath(op.dirname(sys.argv[0]))
+IS_BARE_RUN = not sys.argv[1:] and osp.realpath(os.getcwd()) == osp.realpath(osp.dirname(sys.argv[0]))
 
 
 def SetupOnWindows():
@@ -102,7 +102,7 @@ def SetSendTo(prefix):
     import winreg
 
     key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders')
-    path = op.expandvars(winreg.QueryValueEx(key, 'SendTo')[0])
+    path = osp.expandvars(winreg.QueryValueEx(key, 'SendTo')[0])
     winreg.CloseKey(key)
 
     text = (
@@ -298,7 +298,7 @@ class MyPanel(wx.Panel):
 
         self.flag = ID_STOPPED
         self.matches = []
-        self.history = op.realpath(sys.argv[0] + '/../history.txt')
+        self.history = osp.realpath(sys.argv[0] + '/../history.txt')
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.filter = wx.TextCtrl(self, -1, '*.*', style=wx.TE_PROCESS_ENTER)
@@ -415,7 +415,7 @@ class MyPanel(wx.Panel):
                 file, ln, line, spans = item
                 self.matches.append(item)
                 ln = '-' if ln < 0 else str(ln + 1)  # ln is -1 while match on path name
-                self.results.Append([line.strip(), op.basename(file), ln])
+                self.results.Append([line.strip(), osp.basename(file), ln])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
 
@@ -434,9 +434,9 @@ class MyPanel(wx.Panel):
 
     def OnOpenPath(self, evt):
         path = self.path.GetStringSelection()
-        if not os.path.exists(path):
+        if not osp.exists(path):
             path = self.path.GetValue()
-        path = os.path.abspath(path)
+        path = osp.abspath(path)
         os.popen(f'explorer /select, "{path}"')
 
     def OnSelect(self, evt):
@@ -468,7 +468,7 @@ class MyPanel(wx.Panel):
             evt.Skip()
 
     def OnOpen(self):
-        if not op.isfile(self.history):
+        if not osp.isfile(self.history):
             return
         try:
             input, filter, mask = ReadFile(self.history).splitlines()
@@ -494,8 +494,8 @@ class MyFrame(wx.Frame):
         self.status = self.CreateStatusBar()  # must be initialized here
         self.panel = MyPanel(self)
 
-        icon_path = os.path.realpath(__file__ + '/../icon.ico')
-        if os.path.isfile(icon_path):
+        icon_path = osp.realpath(__file__ + '/../icon.ico')
+        if osp.isfile(icon_path):
             self.SetIcons(wx.IconBundle(icon_path))
 
         self.Layout()
