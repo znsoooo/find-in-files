@@ -169,6 +169,16 @@ def GetMatches(file, pattern):
         yield file, ln, lines[ln], [m.span() for m in pattern.finditer(lines[ln])]
 
 
+class MyFileDropTarget(wx.FileDropTarget):
+    def __init__(self, callback):
+        wx.FileDropTarget.__init__(self)
+        self.callback = callback
+
+    def OnDropFiles(self, x, y, filenames):
+        self.callback(filenames)
+        return False
+
+
 class MyTextDialog(wx.TextEntryDialog):
     def __init__(self, title, prompt, text, size):
         wx.TextEntryDialog.__init__(self, None, prompt, title, text, style=wx.TE_MULTILINE | wx.OK)
@@ -432,6 +442,10 @@ class MyPanel(wx.Panel):
         except Exception:
             traceback.print_exc()
 
+    def OnDragOpen(self, paths):
+        sys.argv[1:] = paths
+        self.OnFind(None)
+
     def OnOpenPath(self, evt):
         path = self.path.GetStringSelection()
         if not osp.exists(path):
@@ -493,6 +507,10 @@ class MyFrame(wx.Frame):
 
         self.status = self.CreateStatusBar()  # must be initialized here
         self.panel = MyPanel(self)
+
+        dt = MyFileDropTarget(self.panel.OnDragOpen)
+        self.SetDropTarget(dt)
+        self.panel.text.SetDropTarget(dt)
 
         icon_path = osp.realpath(__file__ + '/../icon.ico')
         if osp.isfile(icon_path):
