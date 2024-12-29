@@ -192,19 +192,29 @@ class MyTextDialog(wx.TextEntryDialog):
 
 class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent):
-        wx.ListCtrl.__init__(self, parent, size=(20, 20), style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        wx.ListCtrl.__init__(self, parent, size=(20, 20), style=wx.LC_REPORT)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
         self.InsertColumn(0, 'Text', width=900)
         self.InsertColumn(1, 'File', width=200, format=wx.LIST_FORMAT_RIGHT)
         self.InsertColumn(2, 'Ln',   width=50)
         self.Bind(wx.EVT_CHAR, self.OnChar)
 
-    def OnView(self, direction):
-        cnt = self.GetItemCount() or 1
+    def GetAllSelected(self):
         idx = self.GetFirstSelected()
-        idx = (idx if idx == -1 and direction < 0 else idx + direction) % cnt
-        self.Select(idx)
-        self.EnsureVisible(idx)
+        idxs = []
+        while idx != -1:
+            idxs.append(idx)
+            idx = self.GetNextSelected(idx)
+        return idxs
+
+    def OnView(self, direction):
+        cnt = self.GetItemCount()
+        idx = self.GetFocusedItem()
+        idx2 = (idx if idx == -1 and direction < 0 else idx + direction) % (cnt or 1)
+        self.Select(-1, False)
+        self.Select(idx2)
+        self.Focus(idx2)
+        self.EnsureVisible(idx2)
 
     def OnChar(self, evt):
         code = evt.GetKeyCode()
@@ -428,6 +438,7 @@ class MyPanel(wx.Panel):
                 self.results.Append([line.strip(), osp.basename(file), ln])
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
+                    self.results.Focus(0)
 
         if self.flag == ID_RESTART:
             self.FindResults()
@@ -454,18 +465,24 @@ class MyPanel(wx.Panel):
         os.popen(f'explorer /select, "{path}"')
 
     def OnSelect(self, evt):
-        idx = self.results.GetFirstSelected()
-        if idx == -1:
+        idxs = self.results.GetAllSelected()
+        if len(idxs) == 0:
             # changing selected item also raise DESELECTED event, cause idxs to recalculate, so skip this case
             return
             self.path.SetValue(os.getcwd() + os.sep)
             self.text.ResetText()
-        else:
-            file, ln, line, spans = self.matches[idx]
+        elif len(idxs) == 1:
+            file, ln, line, spans = self.matches[idxs[0]]
             pattern = self.GetPattern()
             self.path.SetValue(file)
             self.text.ResetText(ReadFile(file))
             self.text.SetHighlightLine(ln)
+            self.text.SetHighlightPattern(pattern)
+        else:
+            lines = [self.matches[idx][2] for idx in idxs]
+            pattern = self.GetPattern()
+            self.path.SetValue(self.matches[evt.GetIndex()][0])
+            self.text.ResetText('\n'.join(lines))
             self.text.SetHighlightPattern(pattern)
 
     def OnChar(self, evt):
