@@ -170,8 +170,9 @@ def GetMatches(file, pattern):
 
 
 class MyFileDropTarget(wx.FileDropTarget):
-    def __init__(self, callback):
+    def __init__(self, window, callback):
         wx.FileDropTarget.__init__(self)
+        window.SetDropTarget(self)
         self.callback = callback
 
     def OnDropFiles(self, x, y, filenames):
@@ -525,9 +526,8 @@ class MyFrame(wx.Frame):
         self.status = self.CreateStatusBar()  # must be initialized here
         self.panel = MyPanel(self)
 
-        dt = MyFileDropTarget(self.panel.OnDragOpen)
-        self.SetDropTarget(dt)
-        self.panel.text.SetDropTarget(dt)
+        MyFileDropTarget(self, self.panel.OnDragOpen)  # multi window bind to one dt object cause error exit code
+        MyFileDropTarget(self.panel.text, self.panel.OnDragOpen)
 
         icon_path = osp.realpath(__file__ + '/../icon.ico')
         if osp.isfile(icon_path):
