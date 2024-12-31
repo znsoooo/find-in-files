@@ -323,7 +323,7 @@ class MyPanel(wx.Panel):
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.filter = wx.TextCtrl(self, -1, '*.*', style=wx.TE_PROCESS_ENTER)
-        self.btn1 = wx.ToggleButton(self, size=(30, 10), label='Cc')
+        self.btn1 = wx.ToggleButton(self, size=(30, 10), label='Aa')
         self.btn2 = wx.ToggleButton(self, size=(30, 10), label='W')
         self.btn3 = wx.ToggleButton(self, size=(30, 10), label='.*')
 
