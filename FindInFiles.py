@@ -195,10 +195,13 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, size=(20, 20), style=wx.LC_REPORT)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
+
+        self.last_sel = 0
+
         self.InsertColumn(0, 'Text', width=900)
         self.InsertColumn(1, 'File', width=200, format=wx.LIST_FORMAT_RIGHT)
         self.InsertColumn(2, 'Ln',   width=50)
-        self.Bind(wx.EVT_CHAR, self.OnChar)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
 
     def GetAllSelected(self):
         idx = self.GetFirstSelected()
@@ -208,21 +211,24 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
             idx = self.GetNextSelected(idx)
         return idxs
 
-    def OnView(self, direction):
+    def OnView(self, direction, shift=False):
         cnt = self.GetItemCount()
         idx = self.GetFocusedItem()
         idx2 = (idx if idx == -1 and direction < 0 else idx + direction) % (cnt or 1)
-        self.Select(-1, False)
-        self.Select(idx2)
         self.Focus(idx2)
         self.EnsureVisible(idx2)
 
-    def OnChar(self, evt):
-        code = evt.GetKeyCode()
-        if code == wx.WXK_UP:
-            self.OnView(-1)
-        elif code == wx.WXK_DOWN:
-            self.OnView(1)
+        self.last_sel = self.last_sel if shift else idx2
+        idx_st, idx_ed = sorted((idx2, self.last_sel))
+        [self.Select(i, idx_st <= i <= idx_ed) for i in range(self.GetItemCount())]
+
+    def OnKeyDown(self, evt):
+        key = evt.GetKeyCode()
+        shift = evt.ShiftDown()
+        if key == wx.WXK_UP:
+            self.OnView(-1, shift)
+        elif key == wx.WXK_DOWN:
+            self.OnView(1, shift)
         else:
             evt.Skip()
 
@@ -367,8 +373,8 @@ class MyPanel(wx.Panel):
         for widget in [self.input, self.filter]:
             widget.Bind(wx.EVT_TEXT, self.OnFind)
             widget.Bind(wx.EVT_TEXT_ENTER, self.OnFind)
-            widget.Bind(wx.EVT_CHAR, self.results.OnChar)
-            widget.Bind(wx.EVT_MOUSEWHEEL, lambda e: self.results.OnView(1 if e.GetWheelRotation() < 0 else -1))
+            widget.Bind(wx.EVT_CHAR, self.results.OnKeyDown)
+            widget.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
 
         self.btn1.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
@@ -440,6 +446,7 @@ class MyPanel(wx.Panel):
                 if self.results.GetItemCount() == 1:
                     self.results.Select(0)
                     self.results.Focus(0)
+                    self.results.last_sel = 0
 
         if self.flag == ID_RESTART:
             self.FindResults()
@@ -485,6 +492,11 @@ class MyPanel(wx.Panel):
             self.path.SetValue(self.matches[evt.GetIndex()][0])
             self.text.ResetText('\n'.join(lines))
             self.text.SetHighlightPattern(pattern)
+
+    def OnMouseWheel(self, evt):
+        direction = 1 if evt.GetWheelRotation() < 0 else -1
+        shift = evt.ShiftDown()
+        self.results.OnView(direction, shift)
 
     def OnChar(self, evt):
         key = evt.GetKeyCode()
