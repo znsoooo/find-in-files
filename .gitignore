@@ -3,5 +3,5 @@
 /build/*
 /dist/*
 
-/history.txt
+/*.log
 /test*

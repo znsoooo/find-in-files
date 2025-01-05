@@ -325,7 +325,7 @@ class MyPanel(wx.Panel):
 
         self.flag = ID_STOPPED
         self.matches = []
-        self.history = osp.realpath(sys.argv[0] + '/../history.txt')
+        self.history = osp.splitext(sys.argv[0])[0] + '.log'
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.filter = wx.TextCtrl(self, -1, '*.*', style=wx.TE_PROCESS_ENTER)
