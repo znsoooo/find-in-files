@@ -1,17 +1,18 @@
 # Find in Files
 
-`Find in Files` is a Python application that provides a simple and efficient way to search for text within files on your system. It offers a user-friendly graphical interface, making it easy for users to execute complex searches using regular expressions.
+"Find in Files" is a cross-platform Python program that provides a user-friendly GUI interface to search text within multiple files on your system.
 
 
 ## Features
 
-- __GUI Interface:__ "Find in Files" uses the wxPython library to create a cross-platform graphical interface.
-- __RegEx Support:__ Use Python's regex library for advanced text matching capabilities.
-- __System Wide Search:__ Recursively search through directories and files, displays the context in the results.
-- __Command Line Support:__ Execute searches from the command line with specified files and folders as arguments.
-- __Windows system support:__
-  - __Context Menu Integration:__ Integration with context menu, allowing right-click on a file or directory and search within them directly.
-  - __Send To Menu Integration:__ Offers integration with the "Send To" menu for quick access.
+- **GUI Interface:** "Find in Files" uses the wxPython library to create a cross-platform program.
+- **RegEx Support:** Use Python's regex library for advanced text searching capabilities.
+- **Search in Files:** Recursively search through folders and files, displaying all results and context in the window.
+- **Search Setting:** Support filename matching, support match case, whole word, and regular expression.
+- **Command Line Support:** Execute the command line with specified folders and files as arguments to start a new search.
+- **Windows System Integration:**
+  - **Context Menu:** Integrate with context menus, right-click on a folder and search directly within it.
+  - **SendTo Menu:** Integrate with the "Send To" menu, multi-select files and use "Send To" to quick access.
 
 
 ## Installation
@@ -52,4 +53,4 @@ Install on Linux, you may need to find `*.whl` here and install:
 - __QQ:__ 11313213
 - __Email:__ <lsx7@sina.com>
 - __GitHub:__ <https://github.com/znsoooo/find-in-files>
-- __License:__ MIT License. Copyright (c) 2023-2024 Shixian Li (znsoooo). All Rights Reserved.
+- __License:__ MIT License. Copyright (c) 2023-2025 Shixian Li (znsoooo). All Rights Reserved.

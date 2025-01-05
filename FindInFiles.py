@@ -3,7 +3,7 @@ Find in Files
 =============
 
 Input text and find keywords in multiple files, list all results in the table, and quick preview in the application.
-Search mode supports matching-case, whole-word, and regular-expressions.
+Search mode supports match-case, whole-word, and regular-expression.
 
 
 Usage on cross-platform
@@ -38,7 +38,7 @@ Website:
     https://github.com/znsoooo/find-in-files
 
 License:
-    MIT License. Copyright (c) 2023-2024 Shixian Li (znsoooo).
+    MIT License. Copyright (c) 2023-2025 Shixian Li (znsoooo).
 
 """
 
@@ -54,7 +54,7 @@ import wx
 import wx.stc as stc
 import wx.lib.mixins.listctrl as listmix
 
-__version__ = 'v1.4.0'
+__version__ = 'v1.5.0'
 __title__ = 'Find in Files ' + __version__
 
 
