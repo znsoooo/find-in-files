@@ -379,10 +379,11 @@ class MyPanel(wx.Panel):
         self.btn1.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn2.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
-
-        self.results.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
-        self.results.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnSelect)
         self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
+
+        # ITEM_FOCUSED event will be raised event when selected items changed
+        # use CallAfter for callback after all SELECTED/DESELECTED events done
+        self.results.Bind(wx.EVT_LIST_ITEM_FOCUSED, lambda e: wx.CallAfter(self.OnSelect, e))
 
         self.parent.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
         self.parent.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -487,9 +488,10 @@ class MyPanel(wx.Panel):
             self.text.SetHighlightLine(ln)
             self.text.SetHighlightPattern(pattern)
         else:
+            idx = self.results.GetFocusedItem()
             lines = [self.matches[idx][2] for idx in idxs]
             pattern = self.GetPattern()
-            self.path.SetValue(self.matches[evt.GetIndex()][0])
+            self.path.SetValue(self.matches[idx][0])
             self.text.ResetText('\n'.join(lines))
             self.text.SetHighlightPattern(pattern)
 
