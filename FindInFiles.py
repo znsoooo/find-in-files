@@ -329,7 +329,7 @@ class MyPanel(wx.Panel):
 
         self.input = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.filter = wx.TextCtrl(self, -1, '*.*', style=wx.TE_PROCESS_ENTER)
-        self.btn1 = wx.ToggleButton(self, size=(30, 10), label='Aa')
+        self.btn1 = wx.ToggleButton(self, size=(30, 10), label='Cc')
         self.btn2 = wx.ToggleButton(self, size=(30, 10), label='W')
         self.btn3 = wx.ToggleButton(self, size=(30, 10), label='.*')
 
@@ -492,7 +492,7 @@ class MyPanel(wx.Panel):
             lines = [self.matches[idx][2] for idx in idxs]
             pattern = self.GetPattern()
             self.path.SetValue(self.matches[idx][0])
-            self.text.ResetText('\n'.join(lines))
+            self.text.ResetText('\n'.join(lines) + '\n')
             self.text.SetHighlightPattern(pattern)
 
     def OnMouseWheel(self, evt):
@@ -505,10 +505,10 @@ class MyPanel(wx.Panel):
         if key == wx.WXK_ESCAPE:
             self.parent.Close()
         elif key == wx.WXK_F1:
-            text = re.__doc__.strip()
+            text = re.__doc__.strip() + '\n'
             MyTextDialog('Regex Syntax', 'Help on module re:', text, (800, 600))
         elif key == wx.WXK_F12:
-            text = __doc__[__doc__.find('License'):].strip()
+            text = __doc__[__doc__.find('License'):].strip() + '\n'
             MyTextDialog('About Find-in-Files', 'License:', text, (600, 400))
         else:
             evt.Skip()
