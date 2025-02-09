@@ -196,12 +196,16 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, size=(20, 20), style=wx.LC_REPORT)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
 
+        self.parent = parent
         self.last_sel = 0
+        self.selected_changed = False
 
         self.InsertColumn(0, 'Text', width=900)
         self.InsertColumn(1, 'File', width=200, format=wx.LIST_FORMAT_RIGHT)
         self.InsertColumn(2, 'Ln',   width=50)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnSelect)
+        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.OnSelect)
 
     def GetAllSelected(self):
         idx = self.GetFirstSelected()
@@ -210,6 +214,16 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
             idxs.append(idx)
             idx = self.GetNextSelected(idx)
         return idxs
+
+    def OnSelect(self, evt):
+        if not self.selected_changed:
+            # call it only once time
+            self.selected_changed = True
+            wx.CallAfter(self.AfterSelect)
+
+    def AfterSelect(self):
+        self.selected_changed = False
+        self.parent.AfterSelect()
 
     def OnView(self, direction, shift=False):
         cnt = self.GetItemCount()
@@ -381,10 +395,6 @@ class MyPanel(wx.Panel):
         self.btn3.Bind(wx.EVT_TOGGLEBUTTON, self.OnFind)
         self.btn4.Bind(wx.EVT_BUTTON, self.OnOpenPath)
 
-        # ITEM_FOCUSED event will be raised event when selected items changed
-        # use CallAfter for callback after all SELECTED/DESELECTED events done
-        self.results.Bind(wx.EVT_LIST_ITEM_FOCUSED, lambda e: wx.CallAfter(self.OnSelect, e))
-
         self.parent.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
         self.parent.Bind(wx.EVT_CLOSE, self.OnClose)
 
@@ -473,11 +483,10 @@ class MyPanel(wx.Panel):
         path = osp.abspath(path)
         os.popen(f'explorer /select, "{path}"')
 
-    def OnSelect(self, evt):
+    def AfterSelect(self):
+        # called in `MyListCtrl` object
         idxs = self.results.GetAllSelected()
         if len(idxs) == 0:
-            # changing selected item also raise DESELECTED event, cause idxs to recalculate, so skip this case
-            return
             self.path.SetValue(os.getcwd() + os.sep)
             self.text.ResetText()
         elif len(idxs) == 1:
