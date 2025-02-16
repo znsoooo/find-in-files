@@ -243,6 +243,8 @@ class MyListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
             self.OnView(-1, shift)
         elif key == wx.WXK_DOWN:
             self.OnView(1, shift)
+        elif evt.ControlDown() and key == ord('A'):
+            self.Select(-1, True)
         else:
             evt.Skip()
 
