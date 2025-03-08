@@ -2,6 +2,10 @@
 
 "Find in Files" is a cross-platform Python program that provides a user-friendly GUI interface to search text within multiple files on your system.
 
+It supports recursive search for files in folders, supports several search setting modes, integrates with Windows contexts and SendTo menus, and allows executing new searches from the command line.
+
+Download latest release version: <https://github.com/znsoooo/find-in-files/releases>
+
 
 ## Features
 
