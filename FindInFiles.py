@@ -476,7 +476,7 @@ class MyPanel(wx.Panel):
 
     def OnDragOpen(self, paths):
         sys.argv[1:] = paths
-        self.OnFind(None)
+        wx.CallAfter(self.OnFind, None)
 
     def OnOpenPath(self, evt):
         path = self.path.GetStringSelection()
